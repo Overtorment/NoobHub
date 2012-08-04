@@ -41,7 +41,7 @@ hub:subscribe({
 			end
 			
 			print("---------- "..count..') average =  '..(sum/count)  );
-			print("left = "..hub.buffer    );
+			--print("left = "..hub.buffer    );
 		end;----------------------------------------------------------------
 
 
