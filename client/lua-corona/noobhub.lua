@@ -3,17 +3,11 @@ json = require("json")
 crypto = require("crypto")
 
 
-
-
 noobhub = {
-	cr=[[
-]];
 
 	new = function () -- constructor method
-
 		local self = {};
 		self.buffer = '';
-		
 
 		function self:subscribe(params)
 				params.channel = params.channel or 'test-channel';
@@ -27,14 +21,9 @@ noobhub = {
 		end;
 		
 		function self:publish(message)
-				local input,output = socket.select(nil,{ self.sock }, 1);
-				for i,v in ipairs(output) do 
-					local send_result,message,num_byes = v:send("__JSON__START__"..json.encode(message.message).."__JSON__END__"); 
-					if (send_result == nil) then  print("SEND FAIL!  "..message..'  from byte '..num_byes);  end;
-				end
-				
-				--local send_result,message,num_byes = self.sock:send("__JSON__START__"..json.encode(message.message).."__JSON__END__");
-				--if (send_result == nil) then  print("SEND FAIL!  "..message..' '..num_byes);  end;
+				-- TODO: add retries
+				local send_result,message,num_byes = self.sock:send("__JSON__START__"..json.encode(message.message).."__JSON__END__");
+				if (send_result == nil) then  print("SEND FAIL!  "..message..' '..num_byes);  end;
 		end;
 		
 		function self:enterFrame()
@@ -49,7 +38,7 @@ noobhub = {
 						if (p) then  self.buffer = self.buffer .. p;   end;
 						if (not skt) then break; end;
 						if (e) then break; end;
-					end;
+					end -- /while-do
 
 
 						-- now, checking if a message is present in buffer...
@@ -64,15 +53,15 @@ noobhub = {
 							else
 								break;
 							end;
-					end
+					end -- /while-do
 					
 					
-				end -- /do
+				end -- / for-do
 				
 
 				
 				
-		end;
+		end; -- /enterFrame
 		
 		Runtime:addEventListener('enterFrame', self);
 		

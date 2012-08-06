@@ -1,17 +1,12 @@
 require("noobhub")
 
 
-
-local temp ={hello="there"; howare="you"};
-print(json.encode(temp));
-
-
 latencies = {}
 
 hub = noobhub.new();
 
 hub:subscribe({
-	channel = "funky";
+	channel = "funky";	
 	callback = function(message)  
 		print("message received  = "..json.encode(message)); 
 
@@ -41,7 +36,6 @@ hub:subscribe({
 			end
 			
 			print("---------- "..count..') average =  '..(sum/count)  );
-			--print("left = "..hub.buffer    );
 		end;----------------------------------------------------------------
 
 
