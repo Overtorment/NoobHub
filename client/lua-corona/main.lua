@@ -55,4 +55,4 @@ timer.performWithDelay( 150, function()
 			timestamp = system.getTimer()
 		}
 	});
-  end, 10 ); 
+  end, 10 );
