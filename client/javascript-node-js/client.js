@@ -4,8 +4,8 @@ var echo  = (process.argv && process.argv[2] == 'echo')
 
 , Trololo = new function() {
 	
-	var host  = '46.137.78.13'
-	  , port  = '3000'
+	var host  = '0.0.0.0'
+	  , port  = '1337'
 	  , self = this
 	  , channel = 'gsom'
 	  , socket  = null
@@ -14,7 +14,7 @@ var echo  = (process.argv && process.argv[2] == 'echo')
 	  , startTime = 0
 	  , triesMax = 1000
 	  , tryCurrent = 0
-	  , stats = { 
+	  , stats = {
 			max: 0,
 			min: 10000,
 			average: 0,
