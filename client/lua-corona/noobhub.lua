@@ -9,7 +9,7 @@ noobhub = {
 		local self = {}
 		self.buffer = ''
 		self.server = "cm4r.co"
-		self.port = 1337
+		self.port = 1338
 
 		function self:subscribe(params)
 				params.channel = params.channel or 'test-channel'
