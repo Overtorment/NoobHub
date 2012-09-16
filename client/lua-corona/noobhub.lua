@@ -5,11 +5,11 @@ crypto = require("crypto")
 
 noobhub = {
 
-	new = function () -- constructor method
+	new = function (params) -- constructor method
 		local self = {}
 		self.buffer = ''
-		self.server = "cm4r.co"
-		self.port = 1338
+		self.server =  params.server or "cm4r.co"
+		self.port = params.port or 1337
 
 		function self:subscribe(params)
 				params.channel = params.channel or 'test-channel'
