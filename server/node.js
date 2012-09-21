@@ -18,7 +18,9 @@ server.on('connection', function(socket) {
 			data_raw.copy(socket.buffer, socket.buffer.len);
 			socket.buffer.len +=  data_raw.length; // assume all data was written to buffer w/o owerflow
 
-            var str, start, end;
+            var str, start, end
+                , channel = socket.channel
+                , conn_id = socket.connection_id;
             str = socket.buffer.slice(0,socket.buffer.len).toString();
 
             if ( (start = str.indexOf("__SUBSCRIBE__")) !=  -1   &&   (end = str.indexOf("__ENDSUBSCRIBE__"))  !=  -1) {
@@ -27,8 +29,8 @@ server.on('connection', function(socket) {
                 console.log("Client subscribes for channel: " + socket.channel);
                 str = str.substr(0,start) + str.substr(end + 16);  // cut
                 socket.buffer.len = socket.buffer.write(str,0);
-                sockets[socket.channel] = sockets[socket.channel] || []; // array of sockets  subscribed to the same channel
-                sockets[socket.channel].push(socket);
+                sockets[channel] = sockets[channel] || {}; // hashmap of sockets  subscribed to the same channel
+                sockets[channel][conn_id] = socket;
             }
 
             var time_to_exit = true;
@@ -39,8 +41,13 @@ server.on('connection', function(socket) {
                     console.log("Client posts json:  " + json);
                     str = str.substr(0,start) + str.substr(end + 13);  // cut
                     socket.buffer.len = socket.buffer.write(str,0);
-                    for (var c=0, l=sockets[socket.channel].length; c<l;c++) // writing this message to all sockets with the same channel
-						sockets[socket.channel][c].write("__JSON__START__" + json + "__JSON__END__");
+                    for (var prop in sockets[channel]) {
+
+                        if (sockets[channel].hasOwnProperty(prop)) {
+                            sockets[channel][prop].write("__JSON__START__" + json + "__JSON__END__");
+                        }
+                    } // writing this message to all sockets with the same channel
+
                     time_to_exit = false;
                 } else {  time_to_exit = true; } // if no json data found in buffer - then it is time to exit this loop
             } while ( !time_to_exit );
@@ -48,12 +55,8 @@ server.on('connection', function(socket) {
 
     socket.on('close', function(){  // we need to cut out closed socket from array of client socket connections
         if  (!socket.channel   ||   !sockets[socket.channel])  return;
-        for (var i=0, l=sockets[socket.channel].length; i<l; i++) {
-            if (sockets[socket.channel][i].connection_id == socket.connection_id) {
-                sockets[socket.channel].splice(i, 1);
-                break;
-            }
-        }
+        delete sockets[socket.channel][socket.connection_id];
+        console.log(socket.connection_id + " has been disconnected from channel " + socket.channel);
     }); // end of socket.on 'close'
 
 }); //  end of server.on 'connection'
