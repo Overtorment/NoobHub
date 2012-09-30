@@ -1,14 +1,9 @@
 /**
- * Created with JetBrains WebStorm.
- * User: sergii
- * Date: 9/21/12
- * Time: 6:11 PM
- * To change this template use File | Settings | File Templates.
+ * NoobHub client usage example
+ * 30/09/2012
  */
 
 var noobhub = require('./client.js').noobhub;
-
-//console.log(noobhub);
 
 noobhub.subscribe(
     {
@@ -17,9 +12,17 @@ noobhub.subscribe(
         channel: 'gsom'
     }
     , function(s){
-        console.log('Subscribed!!!!')
+        console.log('subscribed callback');
+			
+		noobhub.publish({ a : Math.random() }, function(){
+			console.log("data sent");
+		});
+		
     }
     , function(data) {
-        console.log("get data: " + data);
-    }
+        console.log("get data callback: " + data);
+    },
+	function(err) {
+		console.log("error callback : " + err)
+	}
 );

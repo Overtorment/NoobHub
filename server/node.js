@@ -29,8 +29,8 @@ server.on('connection', function(socket) {
                 console.log("Client subscribes for channel: " + socket.channel);
                 str = str.substr(0,start) + str.substr(end + 16);  // cut
                 socket.buffer.len = socket.buffer.write(str,0);
-                sockets[channel] = sockets[channel] || {}; // hashmap of sockets  subscribed to the same channel
-                sockets[channel][conn_id] = socket;
+                sockets[socket.channel] = sockets[socket.channel] || {}; // hashmap of sockets  subscribed to the same channel
+                sockets[socket.channel][conn_id] = socket;
             }
 
             var time_to_exit = true;
@@ -41,10 +41,10 @@ server.on('connection', function(socket) {
                     console.log("Client posts json:  " + json);
                     str = str.substr(0,start) + str.substr(end + 13);  // cut
                     socket.buffer.len = socket.buffer.write(str,0);
-                    for (var prop in sockets[channel]) {
-
-                        if (sockets[channel].hasOwnProperty(prop)) {
-                            sockets[channel][prop].write("__JSON__START__" + json + "__JSON__END__");
+                    for (var prop in sockets[socket.channel]) {
+						
+                        if (sockets[socket.channel].hasOwnProperty(prop)) {
+							sockets[socket.channel][prop].write("__JSON__START__" + json + "__JSON__END__");
                         }
                     } // writing this message to all sockets with the same channel
 

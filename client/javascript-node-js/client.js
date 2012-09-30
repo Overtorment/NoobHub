@@ -1,9 +1,6 @@
 /**
- * Created with JetBrains WebStorm.
- * User: sergii
- * Date: 9/21/12
- * Time: 5:41 PM
- * To change this template use File | Settings | File Templates.
+ * NoobHub Client Library
+ * 30/09/2012
  */
 
 var net = require("net")
@@ -15,13 +12,15 @@ var net = require("net")
 
 exports.noobhub = new function() {
 
-    var self = this
-        , socket = null
-        , messageCallback = null;
+    var self = this;
 
-    self.config = configDef;
+	this.socket = null;
+    this.messageCallback = null
+	this.errorCallback = null;
 
-    self.subscribe = function(config, subscribedCallback, receivedMessageCallback) {
+    this.config = configDef;
+
+    self.subscribe = function(config, subscribedCallback, receivedMessageCallback, errorCallback) {
 
         for (var prop in config) {
 
@@ -29,35 +28,39 @@ exports.noobhub = new function() {
                 self.config[prop] = config[prop];
         }
 
-        var s = self.socket;
+        self.socket = new net.createConnection(self.config.port, self.config.server);
+        self.socket.setNoDelay(true);
+        self.socket._isConnected = false;
 
-        s = new net.createConnection(self.config.port, self.config.server);
-        s.setNoDelay(true);
-        s._isConnected = false;
-
-        s.on('connect', function(){
+        self.socket.on('connect', function(){
             console.log('connected to ', config.server, config.port);
-            s.write("__SUBSCRIBE__" + config.channel + "__ENDSUBSCRIBE__", function(){
-                s._isConnected = true;
+            self.socket.write("__SUBSCRIBE__" + config.channel + "__ENDSUBSCRIBE__", function(){
+                self.socket._isConnected = true;
 
                 if (typeof(subscribedCallback) === "function") {
-                    subscribedCallback(s);
+                    subscribedCallback(self.socket);
                 }
 
                 if (typeof(receivedMessageCallback) === "function") {
                     self.messageCallback = receivedMessageCallback;
-                    s.on('data', self._handleIncomingMessage);
+                    self.socket.on('data', self._handleIncomingMessage);
                 }
             });
 
         });
 
+		self.socket.on('error', function(err){
+			console.log("err0r:::", err);
+			
+			if (typeof(self.errorCallback) === "function")
+				self.errorCallback(err);
+		});
 
     }
 
-    self.publish = function(message, cb) {
+    self.publish = function(message, cb) { 	
 
-        if (!this.socket)
+        if (!self.socket._isConnected)
             return false;
 
         if (typeof message !== "string")
@@ -68,16 +71,18 @@ exports.noobhub = new function() {
 
     self.unsubscribe = function() {
 
-        if (this.socket)
-            this.socket.end("Take care NoobHub...");
-
+        if (self.socket._isConnected) {
+			self.socket.end("Take care NoobHub...");
+			self.socket._isConnected = false;
+		}
+            
     }
 
     self._handleIncomingMessage = function(data) {
 
         var str = String(data).replace(/__JSON__START__|__JSON__END__|\r|\n/g, '');
 
-        if (typeof(messageCallback) === "function")
+        if (typeof(self.messageCallback) === "function")
             self.messageCallback(str);
     }
 
