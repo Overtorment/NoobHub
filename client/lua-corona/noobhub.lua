@@ -29,7 +29,7 @@ noobhub = {
 				self.sock = nil
 				self.buffer = ''
 		end
-		
+
 		function self:publish(message)
 				-- TODO: add retries
 				local send_result,message,num_byes = self.sock:send("__JSON__START__"..json.encode(message.message).."__JSON__END__")

@@ -4,11 +4,12 @@ NoobHub
 OpenSource multiplayer and network messaging.
 
 * Connections are routed through socket server with minimum latency, ideal for action games.
-* Simple interface.
+* Simple interface. Publish/subscribe paradigm in action.
 * Server written on blazing fast nodejs. 
 * Socket connections, works great through any NAT (local area network), messages delivery is reliable and fast.
 
-Repo includes server code (so you can youse your own server) and Corona lua client. You can test on my server, credentials are in the repo!
+Repo includes server code (so you can use your own server) and Corona lua client. More clients to come. 
+You can test on my server, credentials are in the repo!
 
 Lua code may serve as an example of how LuaSocket library works.
 
@@ -18,9 +19,9 @@ How to use it
 
 INITIALIZE
 
-        hub = noobhub.new(); 
+        hub = noobhub.new({ server="cm4r.co"; port = 1337; }); 
 
-SUBSCRIBE TO A CHANNEL AND RECEIVE CALLBACKS WHEN NEW JSON OBJECTS ARRIVE
+SUBSCRIBE TO A CHANNEL AND RECEIVE CALLBACKS WHEN NEW JSON MESSAGES ARRIVE
 
         hub:subscribe({
           channel = "hello-world";	
@@ -33,11 +34,24 @@ SUBSCRIBE TO A CHANNEL AND RECEIVE CALLBACKS WHEN NEW JSON OBJECTS ARRIVE
         	end;
         });
 
-SAY SOMETHING TO EVERYBODY WHO IS SUBSCRIBED TO THE CNAHHEL
+SAY SOMETHING TO EVERYBODY ON THE CHANNEL
 
-        hub:publish({ 
+        hub:publish({
             message = {
                 action  =  "ping",
                 timestamp = system.getTimer()
             }
         });
+
+
+Authors
+-------
+
+* Igor Korsakov
+* Sergii Tsegelnyk
+
+
+Official discussion thread
+---------------------------
+
+http://developer.coronalabs.com/code/noobhub
