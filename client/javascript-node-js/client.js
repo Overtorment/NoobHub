@@ -66,7 +66,7 @@ exports.noobhub = new function() {
         if (typeof message !== "string")
             message = JSON.stringify(message);
 
-        this.socket.write("__JSON__START__" +message+ "__JSON__END__", cb);
+        this.socket.write("uselesscrap__JSON__START__" +message+ "__JSON__END__uselesscrap", cb);
     }
 
     self.unsubscribe = function() {

@@ -7,16 +7,26 @@ var noobhub = require('./client.js').noobhub;
 
 noobhub.subscribe(
     {
-        server: 'localhost',
-        port: 1337,
+        server: process.env.host, // adapted to cloud9
+        port: 21755,
         channel: 'gsom'
     }
     , function(s){
         console.log('subscribed callback');
-			
-		noobhub.publish({ a : Math.random() }, function(){
-			console.log("data sent");
-		});
+		
+        var tries = 0, maxTries = 10000;
+        
+        setTimeout(function() {
+            
+            noobhub.publish({ a : Math.random() }, function(){
+    		    console.log("data sent");
+		    });
+            
+            if (tries++ < maxTries) 
+                setTimeout(arguments.callee, 50);
+            
+        }, 50);
+		
 		
     }
     , function(data) {
