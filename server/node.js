@@ -46,7 +46,8 @@ server.on('connection', function(socket) {
     socket.on('data', function(data_raw) { // data_raw is an instance of Buffer as well
         // if message length in bigger than total buffer length - give a warning and don't process the data
         if (data_raw.length > cfg.buffer_size) {
-            throw("Your message size is bigger than the maximum buffer size. Adjust the buffer size in configuration");
+            _log("Your message size is bigger than the maximum buffer size. Adjust the buffer size in configuration");
+            return false;
         }
         // if message does not fit the buffer, but can actually fit it - remove a portion of data from the beginning
         else if (data_raw.length > (cfg.buffer_size - socket.buffer.len)) {
