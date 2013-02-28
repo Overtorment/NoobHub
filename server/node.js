@@ -20,7 +20,7 @@ var server = require('net').createServer()
         verbose: true
     },
     _log = function(){
-        if (cfg.verbose && console)
+        if (cfg.verbose)
             console.log.apply(console, arguments);
     };
 
