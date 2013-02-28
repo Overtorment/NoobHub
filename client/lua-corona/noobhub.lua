@@ -1,15 +1,3 @@
---------------------
--- NoobHub
--- opensource multiplayer and network messaging for CoronaSDK
---
--- Authors:
--- Igor Korsakov
--- Sergii Tsegelnyk
---
--- License: WTFPL
--- https://github.com/Overtorment/NoobHub
---------------------
-
 socket = require("socket")
 json = require("json")
 crypto = require("crypto")
@@ -18,16 +6,10 @@ crypto = require("crypto")
 noobhub = {
 
 	new = function (params) -- constructor method
-		params = params or {}
-		if (not params.server  or not  params.port) then
-			print("Noobhub requires server and port to be specified");
-			return a
-		end;
 		local self = {}
 		self.buffer = ''
-
-		self.server =  params.server
-		self.port = params.port
+		self.server =  params.server or "cm4r.co"
+		self.port = params.port or 1337
 
 		function self:subscribe(params)
 				params.channel = params.channel or 'test-channel'
@@ -35,17 +17,11 @@ noobhub = {
 				self.errorback = params.errorback or   function() end
 				self.server = params.server or self.server
 				self.port = params.port or self.port
-				self.sock, error_message = socket.connect(self.server,  self.port)
-				if (self.sock == nil) then
-					print("Noobhub connection error: "..error_message)
-					print "Problems with server..?"
-					return false;
-				end
+				self.sock = socket.connect(self.server,  self.port)
 				self.sock:setoption( 'tcp-nodelay', true ) -- disable Nagle's algorithm for the connection
 				self.sock:settimeout(0)
 				local input,output = socket.select(nil,{ self.sock }, 3)
 				for i,v in ipairs(output) do  v:send("__SUBSCRIBE__"..params.channel.."__ENDSUBSCRIBE__"); end
-				return true
 		end
 
 		function self:unsubscribe()
@@ -56,13 +32,8 @@ noobhub = {
 
 		function self:publish(message)
 				-- TODO: add retries
-				if (self.sock == nil) then
-					print "NoobHub: Attempt to publish without valid subscription (bad socket)"
-					return false;
-				end
-				local send_result, message, num_byes = self.sock:send("__JSON__START__"..json.encode(message.message).."__JSON__END__")
-				if (send_result == nil) then print("Noobhub publish error: "..message..'  sent '..num_byes..' bytes');  return false; end
-				return true
+				local send_result,message,num_byes = self.sock:send("__JSON__START__"..json.encode(message.message).."__JSON__END__")
+				if (send_result == nil) then  print("SEND FAIL!  "..message..' '..num_byes);  end
 		end
 
 		function self:enterFrame()
@@ -72,7 +43,7 @@ noobhub = {
 
 					local got_something_new = false
 					while  true  do
-						skt, e, p = v:receive()
+						skt, e,p = v:receive()
 						if (skt) then  self.buffer = self.buffer .. skt;  got_something_new=true;  end
 						if (p) then  self.buffer = self.buffer .. p;  got_something_new=true;  end
 						if (not skt) then break; end

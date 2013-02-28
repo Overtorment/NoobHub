@@ -1,21 +1,12 @@
---------------------
--- NoobHub
--- opensource multiplayer and network messaging for CoronaSDK
---
--- Demo project
--- Pings itself and measures network latency
---------------------
-
-
-
 require("noobhub")
+
 
 latencies = {}
 
-hub = noobhub.new({ server = "198.57.44.231"; port = 1337; });
+hub = noobhub.new();
 
 hub:subscribe({
-	channel = "ping-channel";
+	channel = "funky";	
 	callback = function(message)  
 		print("message received  = "..json.encode(message)); 
 
