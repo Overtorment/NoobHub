@@ -1,10 +1,10 @@
 <?php
-$url = 'cm4r.co';
+$url = '198.57.44.231';
 $port = 1337;
 $channel = 'testing';
 $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 $ip = gethostbyname($url);
-socket_connect($socket, $ip, $port);
+@socket_connect($socket, $ip, $port) or die("Cant connect to $url:$port\n");
 socket_write($socket,  $msg = "__SUBSCRIBE__".$channel."__ENDSUBSCRIBE__", strlen($msg) );
 print  socket_read($socket,1024,PHP_NORMAL_READ)."\n";
 $command = '';
