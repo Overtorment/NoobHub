@@ -1,8 +1,9 @@
 /**
  * NoobHub node.js server
+ * Opensource multiplayer and network messaging for CoronaSDK
  *
  * @usage node node.js
- * configurate port number and buffer size
+ * configure port number and buffer size
  * according to your needs
  *
  * @authors
@@ -10,28 +11,23 @@
  * Sergii Tsegelnyk
  *
  * @license WTFPL
+ * https://github.com/Overtorment/NoobHub
  */
 
 var server = require('net').createServer()
-    ,sockets = {}  // this is where we store all current client socket connections
+    , sockets = {}  // this is where we store all current client socket connections
     , cfg = {
         port: 1337,
-        buffer_size: 1024*8,
+        buffer_size: 1024*8, // buffer is allocated per each socket client
         verbose: true
-    },
-    _log = function(){
-        if (cfg.verbose)
-            console.log.apply(console, arguments);
+    }
+    , _log = function(){
+        if (cfg.verbose) console.log.apply(console, arguments);
     };
-
-// uncomment this line if you want to test this in cloud9
-//cfg.port = process.env.port;
 
 // black magic
 process.on('uncaughtException', function(err){
-    _log('Caught an Uncaught Exception!');
-    _log(err);
-    process.exit(1);
+    _log('Exception: ' + err);
 });
 
 server.on('connection', function(socket) {
@@ -44,25 +40,13 @@ server.on('connection', function(socket) {
     _log('New client: ' + socket.remoteAddress +':'+ socket.remotePort);
 
     socket.on('data', function(data_raw) { // data_raw is an instance of Buffer as well
-        // if message length in bigger than total buffer length - give a warning and don't process the data
-        if (data_raw.length > cfg.buffer_size) {
-            _log("Your message size is bigger than the maximum buffer size. Adjust the buffer size in configuration");
+        if (data_raw.length > (cfg.buffer_size - socket.buffer.len)) {
+            _log("Message doesn't fit the buffer. Adjust the buffer size in configuration");
+            socket.buffer.len = 0; // trimming buffer
             return false;
         }
-        // if message does not fit the buffer, but can actually fit it - remove a portion of data from the beginning
-        else if (data_raw.length > (cfg.buffer_size - socket.buffer.len)) {
-            var needed_space = data_raw.length - (cfg.buffer_size - socket.buffer.len);
-            socket.buffer = socket.buffer.slice(0, needed_space);
-            socket.buffer.len -= needed_space;
-        }
 
-        try {
-            data_raw.copy(socket.buffer, socket.buffer.len);
-        } catch(e) {
-            _log('buffer copy error: ', e);
-        }
-
-        socket.buffer.len +=  data_raw.length; // now let's assume that all data was written to buffer w/o owerflow
+        socket.buffer.len +=  data_raw.copy(socket.buffer, socket.buffer.len); // keeping track of how much data we have in buffer
 
         var str, start, end
             , conn_id = socket.connection_id;
@@ -73,7 +57,7 @@ server.on('connection', function(socket) {
             socket.write('Hello. Noobhub online. \r\n');
             _log("Client subscribes for channel: " + socket.channel);
             str = str.substr(end + 16);  // cut the message and remove the precedant part of the buffer since it can't be processed
-            socket.buffer.len = socket.buffer.write(str,0);
+            socket.buffer.len = socket.buffer.write(str, 0);
             sockets[socket.channel] = sockets[socket.channel] || {}; // hashmap of sockets  subscribed to the same channel
             sockets[socket.channel][conn_id] = socket;
         }
@@ -84,9 +68,8 @@ server.on('connection', function(socket) {
                 var json = str.substr( start+15,  end-(start+15) );
                 _log("Client posts json:  " + json);
                 str = str.substr(end + 13);  // cut the message and remove the precedant part of the buffer since it can't be processed
-                socket.buffer.len = socket.buffer.write(str,0);
+                socket.buffer.len = socket.buffer.write(str, 0);
                 for (var prop in sockets[socket.channel]) {
-
                     if (sockets[socket.channel].hasOwnProperty(prop)) {
                         sockets[socket.channel][prop].write("__JSON__START__" + json + "__JSON__END__");
                     }
@@ -103,24 +86,7 @@ server.on('connection', function(socket) {
         _log(socket.connection_id + " has been disconnected from channel " + socket.channel);
     }); // end of socket.on 'close'
 
-    socket.on('error', function(){ // error handling, event 'close' will be called automatically @see http://nodejs.org/api/net.html#net_event_close_1
-        if (socket.channel && sockets[socket.channel]) {
-            delete sockets[socket.channel][socket.connection_id];
-        }
-        _log(socket.connection_id + ' will be closed due to the error');
-        _log(arguments);
-    });
-
 }); //  end of server.on 'connection'
 
-server.on('error', function (e) { // error handling, event 'close' will be called automatically @see http://nodejs.org/api/net.html#net_event_error
-    _log('server error :');
-    _log(e);
-});
-
-server.on('close', function(){
-    _log('All connections are stopped and server is closed');
-});
-
+server.on('listening', function(){ console.log('NoobHub on ' + server.address().address +':'+ server.address().port); });
 server.listen(cfg.port);
-console.log('NoobHub on ' + server.address().address +':'+ server.address().port);

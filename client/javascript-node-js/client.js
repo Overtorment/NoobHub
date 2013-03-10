@@ -1,6 +1,6 @@
 /**
  * NoobHub Client Library
- * 30/09/2012
+ *
  */
 
 var net = require("net")
@@ -21,9 +21,7 @@ exports.noobhub = new function() {
     this.config = configDef;
 
     self.subscribe = function(config, subscribedCallback, receivedMessageCallback, errorCallback) {
-
         for (var prop in config) {
-
             if (self.config.hasOwnProperty(prop))
                 self.config[prop] = config[prop];
         }
@@ -33,7 +31,7 @@ exports.noobhub = new function() {
         self.socket._isConnected = false;
 
         self.socket.on('connect', function(){
-            console.log('connected to ', config.server, config.port);
+            console.log('connected to ', config.server + ':' + config.port);
             self.socket.write("__SUBSCRIBE__" + config.channel + "__ENDSUBSCRIBE__", function(){
                 self.socket._isConnected = true;
 
@@ -51,15 +49,13 @@ exports.noobhub = new function() {
 
 		self.socket.on('error', function(err){
 			console.log("err0r:::", err);
-			
 			if (typeof(self.errorCallback) === "function")
 				self.errorCallback(err);
 		});
 
-    }
+    } //  end of self.subscribe()
 
-    self.publish = function(message, cb) { 	
-
+    self.publish = function(message, cb) {
         if (!self.socket._isConnected)
             return false;
 
@@ -70,18 +66,14 @@ exports.noobhub = new function() {
     }
 
     self.unsubscribe = function() {
-
         if (self.socket._isConnected) {
 			self.socket.end("Take care NoobHub...");
 			self.socket._isConnected = false;
 		}
-            
     }
 
     self._handleIncomingMessage = function(data) {
-
         var str = String(data).replace(/__JSON__START__|__JSON__END__|\r|\n/g, '');
-
         if (typeof(self.messageCallback) === "function")
             self.messageCallback(str);
     }
