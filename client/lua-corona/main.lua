@@ -7,7 +7,7 @@
 --------------------
 
 
-
+crypto = require("crypto")
 require("noobhub")
 
 latencies = {}
@@ -55,7 +55,7 @@ hub:subscribe({
 
 
 
-timer.performWithDelay( 150, function()
+timer.performWithDelay( 5000, function()
 	print("ping sent");
 	hub:publish({
 		message = {
@@ -64,4 +64,4 @@ timer.performWithDelay( 150, function()
 			timestamp = system.getTimer()
 		}
 	});
-  end, 10 );
+  end, 0 );

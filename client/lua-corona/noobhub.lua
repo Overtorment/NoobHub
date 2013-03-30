@@ -12,7 +12,6 @@
 
 socket = require("socket")
 json = require("json")
-crypto = require("crypto")
 
 
 noobhub = {
@@ -30,11 +29,8 @@ noobhub = {
 		self.port = params.port
 
 		function self:subscribe(params)
-				params.channel = params.channel or 'test-channel'
+				self.channel = params.channel or 'test-channel'
 				self.callback = params.callback or   function() end
-				self.errorback = params.errorback or   function() end
-				self.server = params.server or self.server
-				self.port = params.port or self.port
 				self.sock, error_message = socket.connect(self.server,  self.port)
 				if (self.sock == nil) then
 					print("Noobhub connection error: "..error_message)
@@ -44,7 +40,7 @@ noobhub = {
 				self.sock:setoption( 'tcp-nodelay', true ) -- disable Nagle's algorithm for the connection
 				self.sock:settimeout(0)
 				local input,output = socket.select(nil,{ self.sock }, 3)
-				for i,v in ipairs(output) do  v:send("__SUBSCRIBE__"..params.channel.."__ENDSUBSCRIBE__"); end
+				for i,v in ipairs(output) do  v:send("__SUBSCRIBE__"..self.channel.."__ENDSUBSCRIBE__"); end
 				return true
 		end
 
@@ -54,14 +50,25 @@ noobhub = {
 				self.buffer = ''
 		end
 
+		function self:reconnect()
+				if (not self.channel or not self.callback) then return false; end;
+				print("Noobhub: attempt to reconnect...");
+				self:subscribe({ channel = self.channel; callback = self.callback})
+		end
+
 		function self:publish(message)
 				-- TODO: add retries
 				if (self.sock == nil) then
 					print "NoobHub: Attempt to publish without valid subscription (bad socket)"
+					self:reconnect()
 					return false;
 				end
 				local send_result, message, num_byes = self.sock:send("__JSON__START__"..json.encode(message.message).."__JSON__END__")
-				if (send_result == nil) then print("Noobhub publish error: "..message..'  sent '..num_byes..' bytes');  return false; end
+				if (send_result == nil) then
+					print("Noobhub publish error: "..message..'  sent '..num_byes..' bytes');
+					if (message == 'closed') then  self:reconnect() end
+					return false;
+				end
 				return true
 		end
 
@@ -101,5 +108,5 @@ noobhub = {
 		Runtime:addEventListener('enterFrame', self)
 
 		return self
-	end
+	end -- /new
 }
