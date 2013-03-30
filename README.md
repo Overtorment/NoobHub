@@ -58,4 +58,5 @@ Authors
 Official discussion thread
 ---------------------------
 
-http://developer.coronalabs.com/code/noobhub
+* [old] http://developer.coronalabs.com/code/noobhub
+* [new] http://forums.coronalabs.com/topic/32775-noobhub-free-opensource-multiplayer-and-network-messaging-for-coronasdk
