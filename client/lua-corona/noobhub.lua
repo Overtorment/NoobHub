@@ -45,8 +45,10 @@ noobhub = {
 		end
 
 		function self:unsubscribe()
+			if self.sock then
 				self.sock:close()
 				self.sock = nil
+			end
 				self.buffer = ''
 		end
 
