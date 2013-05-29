@@ -55,7 +55,7 @@ noobhub = {
 		function self:reconnect()
 				if (not self.channel or not self.callback) then return false; end;
 				print("Noobhub: attempt to reconnect...");
-				self:subscribe({ channel = self.channel; callback = self.callback})
+				return self:subscribe({ channel = self.channel; callback = self.callback})
 		end
 
 		function self:publish(message)
