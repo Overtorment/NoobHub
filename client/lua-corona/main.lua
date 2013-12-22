@@ -1,6 +1,6 @@
 --------------------
 -- NoobHub
--- opensource multiplayer and network messaging for CoronaSDK
+-- opensource multiplayer and network messaging for CoronaSDK & Gideros
 --
 -- Demo project
 -- Pings itself and measures network latency
