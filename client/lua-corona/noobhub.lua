@@ -1,6 +1,6 @@
 --------------------
 -- NoobHub
--- opensource multiplayer and network messaging for CoronaSDK
+-- opensource multiplayer and network messaging for CoronaSDK & Gideros
 --
 -- Authors:
 -- Igor Korsakov
@@ -107,7 +107,16 @@ noobhub = {
 				
 		end; -- /enterFrame
 
-		Runtime:addEventListener('enterFrame', self)
+		-- platform dependent code
+		if (system == nil) then
+				if (application ~= nil) then -- most likely Gideros
+					local timer = Timer.new(33, 0)
+					timer:addEventListener(Event.TIMER,  function() self:enterFrame(); end );
+					timer:start()
+				end
+			else  -- most likely CoronaSDK
+				Runtime:addEventListener('enterFrame', self)
+		end
 
 		return self
 	end -- /new
