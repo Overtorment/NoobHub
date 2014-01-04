@@ -1,6 +1,6 @@
 --------------------
 -- NoobHub
--- opensource multiplayer and network messaging for CoronaSDK & Gideros
+-- opensource multiplayer and network messaging for CoronaSDK, Moai & Gideros
 --
 -- Authors:
 -- Igor Korsakov
@@ -11,7 +11,13 @@
 --------------------
 
 socket = require("socket")
-json = require("json")
+
+-- platform dependent code
+if (MOAIJsonParser ~= nil) then -- looks like MoaiSDK
+	json = MOAIJsonParser
+else
+	json = require("json")
+end -- /platform dependent code
 
 
 noobhub = {
@@ -114,9 +120,16 @@ noobhub = {
 					timer:addEventListener(Event.TIMER,  function() self:enterFrame(); end );
 					timer:start()
 				end
+				if (MOAIJsonParser ~= nil) then -- most likely MoaiSDK
+					local timer = MOAITimer.new ()
+					timer:setSpan( 0.033 )
+					timer:setMode(MOAITimer.LOOP)
+					timer:setListener( MOAITimer.EVENT_TIMER_END_SPAN, function() self:enterFrame(); end, true )
+					timer:start()
+				end
 			else  -- most likely CoronaSDK
 				Runtime:addEventListener('enterFrame', self)
-		end
+		end -- /platform dependent code
 
 		return self
 	end -- /new

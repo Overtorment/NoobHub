@@ -1,6 +1,6 @@
 /**
  * NoobHub node.js server
- * Opensource multiplayer and network messaging for CoronaSDK
+ * Opensource multiplayer and network messaging for CoronaSDK, Moai & Gideros
  *
  * @usage node node.js
  * configure port number and buffer size
