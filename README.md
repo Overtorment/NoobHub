@@ -1,7 +1,7 @@
 NoobHub
 =======
 
-OpenSource multiplayer and network messaging for CoronaSDK, Moai & Gideros.
+OpenSource multiplayer and network messaging for CoronaSDK, Moai, Gideros & LÖVE
 
 * Connections are routed through socket server with minimum latency, ideal for action games.
 * Simple interface. Publish/subscribe paradigm in action.
