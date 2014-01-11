@@ -1,6 +1,6 @@
 --------------------
 -- NoobHub
--- opensource multiplayer and network messaging for CoronaSDK, Moai & Gideros
+-- opensource multiplayer and network messaging for CoronaSDK, Moai, Gideros & LÖVE
 --
 -- Demo project
 -- Pings itself and measures network latency

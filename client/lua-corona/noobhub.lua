@@ -1,6 +1,6 @@
 --------------------
 -- NoobHub
--- opensource multiplayer and network messaging for CoronaSDK, Moai & Gideros
+-- opensource multiplayer and network messaging for CoronaSDK, Moai, Gideros & LÖVE
 --
 -- Authors:
 -- Igor Korsakov
@@ -26,7 +26,7 @@ noobhub = {
 		params = params or {}
 		if (not params.server  or not  params.port) then
 			print("Noobhub requires server and port to be specified");
-			return a
+			return false;
 		end;
 		local self = {}
 		self.buffer = ''
@@ -71,9 +71,9 @@ noobhub = {
 					self:reconnect()
 					return false;
 				end
-				local send_result, message, num_byes = self.sock:send("__JSON__START__"..json.encode(message.message).."__JSON__END__")
+				local send_result, message, num_bytes = self.sock:send("__JSON__START__"..json.encode(message.message).."__JSON__END__")
 				if (send_result == nil) then
-					print("Noobhub publish error: "..message..'  sent '..num_byes..' bytes');
+					print("Noobhub publish error: "..message..'  sent '..num_bytes..' bytes');
 					if (message == 'closed') then  self:reconnect() end
 					return false;
 				end
@@ -126,6 +126,10 @@ noobhub = {
 					timer:setMode(MOAITimer.LOOP)
 					timer:setListener( MOAITimer.EVENT_TIMER_END_SPAN, function() self:enterFrame(); end, true )
 					timer:start()
+				end
+				if (love ~= nil) then -- most likely LÖVE
+					-- do nothing, as Noobhub's enterFrame() method should be manually
+					-- called on every love.update() callback to give it some CPU time
 				end
 			else  -- most likely CoronaSDK
 				Runtime:addEventListener('enterFrame', self)

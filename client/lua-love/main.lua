@@ -4,69 +4,74 @@
 --
 -- Demo project
 -- Pings itself and measures network latency
--- (if you have issues with socket.lua you need to add it as a plugin)
+-- Be sure to call Noobhub:enterFrame in love.update() callback!
 --------------------
 
-
-
 require("noobhub")
-
 latencies = {}
 hub = noobhub.new({ server = "198.57.44.231"; port = 1337; });
+txt = '';
 
 hub:subscribe({
-        channel = "ping-channel";
-        callback = function(message)  
-                print("message received  = "..json.encode(message)); 
+	channel = "ping-channel";
+	callback = function(message)
+		print("message received  = "..json.encode(message));
 
-                if(message.action == "ping")   then ----------------------------------
-                        print ("pong sent");
-                        hub:publish({
-                                message = {
-                                        action  =  "pong",
-                                        id = message.id,
-                                        original_timestamp = message.timestamp,
-                                        timestamp = math.floor(os.timer() * 1000) 
-                                }
-                        });
-                end;----------------------------------------------------------------
-
-
-
-                if (message.action == "pong"  )   then ----------------------------------
-                        print ("pong id "..message.id.." received on ".. math.floor(os.timer() * 1000) .."; summary:   latency=" .. ( math.floor(os.timer() * 1000)  - message.original_timestamp)   );
-                        table.insert( latencies,  ( ( math.floor(os.timer() * 1000)  - message.original_timestamp)   )     );
-
-                        local sum = 0;
-                        local count = 0;
-                        for i,lat in ipairs(latencies) do
-                                sum = sum + lat;
-                                count =  count+1;
-                        end
-                        
-                        print("---------- "..count..') average =  '..(sum/count)  );
-                end;----------------------------------------------------------------
+		if(message.action == "ping")   then ----------------------------------
+			print ("pong sent");
+			hub:publish({
+				message = {
+					action  =  "pong",
+					id = message.id,
+					original_timestamp = message.timestamp,
+					timestamp = love.timer.getTime()
+				}
+			});
+		end;----------------------------------------------------------------
 
 
+		if (message.action == "pong"  )   then ----------------------------------
+			print ("pong id "..message.id.." received on "..love.timer.getTime().."; summary:   latency=" .. (love.timer.getTime() - message.original_timestamp)   );
+			table.insert( latencies,  ( (love.timer.getTime() - message.original_timestamp)   )     );
 
-        end;
+			local sum = 0;
+			local count = 0;
+			for i,lat in ipairs(latencies) do
+				sum = sum + lat;
+				count =  count+1;
+			end
+
+			print("---------- "..count..') average =  '..(sum/count)  );
+			txt = 'Ping time average =  '..((sum/count)*1000)..' ms';
+		end;----------------------------------------------------------------
+
+	end;
 });
 
 
 
-local timer = Timer.new(1000, 10)
-timer:addEventListener(Event.TIMER,  function()
-        print("ping sent");
-        hub:publish({
-                message = {
-                        action  =  "ping",
-                        id =  md5(  math.floor(os.timer() * 1000)   ..  math.random() ),
-                        timestamp =  math.floor(os.timer() * 1000) 
-                }
-        });
-  end);
- timer:start()
 
+dtotal = 0   -- this keeps track of how much time has passed
+function love.update(dt)
+   hub:enterFrame(); -- making sure to give some CPU time to Noobhub
+   dtotal = dtotal + dt
+   if dtotal >= 3 then -- send ping every 3 seconds
+        dtotal = dtotal - 3
+		hub:publish({
+			message = {
+				action  =  "ping",
+				id = md5( love.timer.getTime()  ..  math.random() ),
+				timestamp = love.timer.getTime()
+			}
+		});
+		print("ping sent");
+   end
+end
+
+
+function love.draw()
+    love.graphics.print(txt, 200, 300)
+end
 
 
 
@@ -87,18 +92,18 @@ timer:addEventListener(Event.TIMER,  function()
 
 
 function md5(input_string)
- 
+
 	local bit = require("bit")
 	local tobit, tohex, bnot = bit.tobit or bit.cast, bit.tohex, bit.bnot
 	local bor, band, bxor = bit.bor, bit.band, bit.bxor
 	local lshift, rshift, rol, bswap = bit.lshift, bit.rshift, bit.rol, bit.bswap
 	local byte, char, sub, rep = string.byte, string.char, string.sub, string.rep
- 
+
 	if not rol then -- Replacement function if rotates are missing.
 	  local bor, shl, shr = bit.bor, bit.lshift, bit.rshift
 	  function rol(a, b) return bor(shl(a, b), shr(a, 32-b)) end
 	end
- 
+
 	if not bswap then -- Replacement function if bswap is missing.
 	  local bor, band, shl, shr = bit.bor, bit.band, bit.lshift, bit.rshift
 	  function bswap(a)
@@ -106,32 +111,32 @@ function md5(input_string)
 				 shl(band(a, 0xff00), 8), shl(a, 24));
 	  end
 	end
- 
+
 	if not tohex then -- (Unreliable) replacement function if tohex is missing.
 	  function tohex(a)
 		 return string.sub(string.format("%08x", a), -8)
 	  end
 	end
- 
+
 	local function tr_f(a, b, c, d, x, s)
 	  return rol(bxor(d, band(b, bxor(c, d))) + a + x, s) + b
 	end
- 
+
 	local function tr_g(a, b, c, d, x, s)
 	  return rol(bxor(c, band(d, bxor(b, c))) + a + x, s) + b
 	end
- 
+
 	local function tr_h(a, b, c, d, x, s)
 	  return rol(bxor(b, c, d) + a + x, s) + b
 	end
- 
+
 	local function tr_i(a, b, c, d, x, s)
 	  return rol(bxor(c, bor(b, bnot(d))) + a + x, s) + b
 	end
- 
+
 	local function transform(x, a1, b1, c1, d1)
 	  local a, b, c, d = a1, b1, c1, d1
- 
+
 	  a = tr_f(a, b, c, d, x[ 1] + 0xd76aa478,  7)
 	  d = tr_f(d, a, b, c, x[ 2] + 0xe8c7b756, 12)
 	  c = tr_f(c, d, a, b, x[ 3] + 0x242070db, 17)
@@ -148,7 +153,7 @@ function md5(input_string)
 	  d = tr_f(d, a, b, c, x[14] + 0xfd987193, 12)
 	  c = tr_f(c, d, a, b, x[15] + 0xa679438e, 17)
 	  b = tr_f(b, c, d, a, x[16] + 0x49b40821, 22)
- 
+
 	  a = tr_g(a, b, c, d, x[ 2] + 0xf61e2562,  5)
 	  d = tr_g(d, a, b, c, x[ 7] + 0xc040b340,  9)
 	  c = tr_g(c, d, a, b, x[12] + 0x265e5a51, 14)
@@ -165,7 +170,7 @@ function md5(input_string)
 	  d = tr_g(d, a, b, c, x[ 3] + 0xfcefa3f8,  9)
 	  c = tr_g(c, d, a, b, x[ 8] + 0x676f02d9, 14)
 	  b = tr_g(b, c, d, a, x[13] + 0x8d2a4c8a, 20)
- 
+
 	  a = tr_h(a, b, c, d, x[ 6] + 0xfffa3942,  4)
 	  d = tr_h(d, a, b, c, x[ 9] + 0x8771f681, 11)
 	  c = tr_h(c, d, a, b, x[12] + 0x6d9d6122, 16)
@@ -182,7 +187,7 @@ function md5(input_string)
 	  d = tr_h(d, a, b, c, x[13] + 0xe6db99e5, 11)
 	  c = tr_h(c, d, a, b, x[16] + 0x1fa27cf8, 16)
 	  b = tr_h(b, c, d, a, x[ 3] + 0xc4ac5665, 23)
- 
+
 	  a = tr_i(a, b, c, d, x[ 1] + 0xf4292244,  6)
 	  d = tr_i(d, a, b, c, x[ 8] + 0x432aff97, 10)
 	  c = tr_i(c, d, a, b, x[15] + 0xab9423a7, 15)
@@ -199,10 +204,10 @@ function md5(input_string)
 	  d = tr_i(d, a, b, c, x[12] + 0xbd3af235, 10)
 	  c = tr_i(c, d, a, b, x[ 3] + 0x2ad7d2bb, 15)
 	  b = tr_i(b, c, d, a, x[10] + 0xeb86d391, 21)
- 
+
 	  return tobit(a+a1), tobit(b+b1), tobit(c+c1), tobit(d+d1)
 	end
- 
+
 	-- Note: this is copying the original string and NOT particularly fast.
 	-- A library for struct unpacking would make this task much easier.
 	local function md5(msg)
@@ -225,7 +230,7 @@ function md5(input_string)
 	  end
 	  return tohex(bswap(a))..tohex(bswap(b))..tohex(bswap(c))..tohex(bswap(d))
 	end
- 
+
   	return md5(input_string);
- 
+
 end
