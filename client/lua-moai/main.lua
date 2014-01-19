@@ -1,20 +1,72 @@
 --------------------
 -- NoobHub
--- opensource multiplayer and network messaging for CoronaSDK, Moai, Gideros & LÖVE
+-- opensource multiplayer and network messaging for CoronaSDK, Moai & Gideros
 --
 -- Demo project
 -- Pings itself and measures network latency
 --------------------
+local APP_NAME = "<c:2CF>noobhub<c>moai<c:F52>demo 1.0"
+STAGE_WIDTH = 800
+STAGE_HEIGHT = 240
+MOAISim.openWindow ( APP_NAME, STAGE_WIDTH, STAGE_HEIGHT )
+aViewport = MOAIViewport.new ()
+aViewport:setScale ( STAGE_WIDTH, STAGE_HEIGHT )
+aViewport:setSize ( STAGE_WIDTH, STAGE_HEIGHT )
+aMainLayer = MOAILayer2D.new ()
+aMainLayer:setViewport ( aViewport )
 
-MOAISim.openWindow ( "test", 320, 480 )
-viewport = MOAIViewport.new ()
-viewport:setSize ( 320, 480 )
-viewport:setScale ( 320, -480 )
-layer = MOAILayer2D.new ()
-layer:setViewport ( viewport )
-MOAISim.pushRenderPass ( layer )
+
+-- a basic MOAI console
+-- application fonts
+asciiTextCodes  = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 .,:;!?()&/-'
+appFonts        = {}
+appFonts["anonymous"] = {
+	ttf        = 'anonymous.ttf', 
+	textcodes  = asciiTextCodes, 
+	font       = MOAIFont.new(),
+	size       = 10, 
+	dpi        = 163
+}
+
+for appIndex, appFont in pairs(appFonts) do
+	if (appFont.font ~= nil) then
+    	appFont.font:loadFromTTF(appFont.ttf, appFont.textcodes, appFont.size, appFont.dpi)
+	else
+    	print("Some error loading fonts..")
+	end
+end
+
+-- a text console message
+aConsoleMsg = ""
+aConsole = MOAITextBox.new()
+aConsole:setFont(appFonts["anonymous"].font)
+aConsole:setTextSize(appFonts["anonymous"].size)
+aConsole:setString(APP_NAME)
+aConsole:setRect(-STAGE_WIDTH/2 + 40, -STAGE_HEIGHT/2, STAGE_WIDTH/2, STAGE_HEIGHT/2 - 40)
+aConsole:setYFlip(true)
+
+aMainLayer:insertProp(aConsole)
 
 
+function clearTextConsoleMessage()
+	aConsoleMsg = ""
+	aConsole:setString(aConsoleMsg)
+end
+function appMessage(instr)
+
+	aConsoleMsg = aConsoleMsg .. instr
+	aConsole:setString(aConsoleMsg)
+end
+
+
+-- and now it is time for the camera:
+aPartition = MOAIPartition.new ()
+aPartition:insertProp ( aConsole )
+aMainLayer:setPartition ( aPartition )
+
+MOAISim.pushRenderPass ( aMainLayer )
+
+appMessage(APP_NAME)
 
 -- implementing our own milliseconds counter, since we don't have a native one
 local ms = 0
@@ -27,19 +79,19 @@ ms_counter:setListener ( MOAITimer.EVENT_TIMER_END_SPAN, function()
 ms_counter:start()
 --
 
-
 require("noobhub")
 latencies = {}
 
 hub = noobhub.new({ server = "198.57.44.231"; port = 1337; });
 
+aReportMsg = ""
 hub:subscribe({
 	channel = "ping-channel";
 	callback = function(message)
-		--print("message received  = "..json.encode(message));
-
+		--aReportMsg = "message received  = "..json.encode(message)
 		if(message.action == "ping")   then ----------------------------------
-			print ("ping received, sending pong");
+			
+			aReportMsg = "ping received, sending pong"
 			hub:publish({
 				message = {
 					action  =  "pong",
@@ -53,7 +105,7 @@ hub:subscribe({
 
 
 		if (message.action == "pong"  )   then ----------------------------------
-			print ("pong received, id "..message.id.." received on "..(ms).."; original_timestamp "..message.original_timestamp.." summary:   latency=" .. (ms - message.original_timestamp)   );
+			aReportMsg = aReportMsg .. "pong received, id "..message.id.." received on "..(ms).."; original_timestamp "..message.original_timestamp.." summary:   latency=" .. (ms - message.original_timestamp)
 			table.insert( latencies,  ( (ms - message.original_timestamp)   )     );
 			local sum = 0;
 			local count = 0;
@@ -62,25 +114,21 @@ hub:subscribe({
 				count =  count+1;
 			end
 
-			print("---------- "..count..') average =  '..(sum/count)  );
+			aReportMsg = aReportMsg .. "---------- "..count..') average =  '..(sum/count)
 		end;----------------------------------------------------------------
 
-
+		clearTextConsoleMessage()
+		appMessage(aReportMsg)
 
 	end;
 });
-
-
-
-
-
 
 local timer = MOAITimer.new ()
 timer:setSpan ( 2 )
 timer:setMode(MOAITimer.LOOP)
 timer:setListener ( MOAITimer.EVENT_TIMER_END_SPAN, function()
 					--timer:stop()
-					print("ping sent");
+					appMessage("ping sent");
 					hub:publish({
 						message = {
 							action  =  "ping",
@@ -90,14 +138,6 @@ timer:setListener ( MOAITimer.EVENT_TIMER_END_SPAN, function()
 					});
 			end, true )
 timer:start()
-
-
-
-
-
-
-
-
 
 function md5 ( data )
 	local writer = MOAIHashWriter.new ()
