@@ -60,3 +60,7 @@ Official discussion thread
 
 * [old] http://developer.coronalabs.com/code/noobhub
 * [new] http://forums.coronalabs.com/topic/32775-noobhub-free-opensource-multiplayer-and-network-messaging-for-coronasdk
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/Overtorment/noobhub/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
