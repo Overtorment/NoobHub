@@ -74,8 +74,19 @@ exports.noobhub = new function() {
 
     self._handleIncomingMessage = function(data) {
         var str = String(data).replace(/__JSON__START__|__JSON__END__|\r|\n/g, '');
-        if (typeof(self.messageCallback) === "function")
-            self.messageCallback(str);
+	var s = String(str).replace(/}{|\r|\n/g, '}<splitHere>{');
+        if (s == str){
+	
+            if (typeof(self.messageCallback) === "function")
+                self.messageCallback(str);
+        }
+        else{
+	    str = s.split("<splitHere>");
+	    for (var i in str) {
+	      if (typeof(self.messageCallback) === "function")
+		self.messageCallback(str[i]);
+	    }
+	}
     }
 
 };
