@@ -1,12 +1,21 @@
-require("noobhub")
+--------------------
+-- NoobHub
+-- opensource multiplayer and network messaging for CoronaSDK, Moai, Gideros & LÖVE
+--
+-- Demo project
+-- Pings itself and measures network latency
+--------------------
 
+
+crypto = require("crypto")
+require("noobhub")
 
 latencies = {}
 
-hub = noobhub.new();
+hub = noobhub.new({ server = "198.57.44.231"; port = 1337; });
 
 hub:subscribe({
-	channel = "funky";	
+	channel = "ping-channel";
 	callback = function(message)  
 		print("message received  = "..json.encode(message)); 
 
@@ -46,7 +55,7 @@ hub:subscribe({
 
 
 
-timer.performWithDelay( 150, function()
+timer.performWithDelay( 5000, function()
 	print("ping sent");
 	hub:publish({
 		message = {
@@ -55,4 +64,4 @@ timer.performWithDelay( 150, function()
 			timestamp = system.getTimer()
 		}
 	});
-  end, 10 );
+  end, 0 );
