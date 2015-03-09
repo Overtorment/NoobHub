@@ -10,7 +10,7 @@ var net = require("net")
         channel: 'gsom'
     };
 
-exports.noobhub = new function() {
+var Nbhb = exports.Nbhb = function() {
 
     var self = this;
 
@@ -90,3 +90,5 @@ exports.noobhub = new function() {
     }
 
 };
+
+exports.noobhub = new Nbhb();
