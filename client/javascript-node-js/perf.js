@@ -2,24 +2,29 @@
     npm install async node-statsd
 */
 
-var async   = require('async'),
-    statsd  = require('node-statsd'),
-    opts    = {
-        host: '46.4.76.236',
-        port: 8125,
-        prefix: 'noobhub.testload'
-    },
-    clientStatsd  = new statsd(),
+var dgram   = require('dgram'),
     Noobhub = require('./client.js').Nbhb,
     config  = {
         zerlings: 1000,
-        numberOfChannels: 20
+        numberOfChannels: 20,
+        statsd: {
+            port: 8125,
+            host: '46.4.76.236',
+            prefix: 'noobhub.testload.'
+        }
     };
 
-// listen to statsd socket error
-clientStatsd.socket.on('error', function(error) {
-  return console.error("[StatsD] Error in socket: ", error);
-});
+var _sendMetrics = function(msg) {
+    var cfg = config.statsd;
+    var message = new Buffer(cfg.prefix + msg);
+    var client = dgram.createSocket("udp4");
+    client.send(message, 0, message.length, cfg.port, cfg.host, function(err) {
+        if (err) {
+            console.error(err);
+        }
+        client.close();
+    });
+}
 
 var _onSubscribed = function(idx) {
     console.log(idx + ' subscribed');
@@ -52,7 +57,7 @@ var z = function(idx) {
                 if (msg === _myMessage) {
                     var lat = Date.now() - startTime;
                     console.log(idx + 'latency is : ',  lat);
-                    clientStatsd.timing('latency', lat);
+                    _sendMetrics('latency:'+lat+'|ms');
                 }
                 return _onMessage(idx, msg); 
             }
