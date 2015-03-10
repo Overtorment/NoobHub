@@ -49,11 +49,11 @@ var Nbhb = exports.Nbhb = function() {
         });
 
 		self.socket.on('error', function(err){
-			console.log("err0r:::", err); //self.errorCallback(err);
-			//self.unsubscribe();
+			console.log("err0r:::", err);
+
 			if (typeof(self.errorCallback) === "function") {
-			    self.errorCallback(err);
-			}
+			    return self.errorCallback(err);
+			} else return;
 		});
 
     } //  end of self.subscribe()
@@ -77,7 +77,8 @@ var Nbhb = exports.Nbhb = function() {
 
     self._handleIncomingMessage = function(data) {
         var str = String(data).replace(/__JSON__START__|__JSON__END__|\r|\n/g, '');
-	var s = String(str).replace(/}{|\r|\n/g, '}<splitHere>{');
+	    var s = String(str).replace(/}{|\r|\n/g, '}<splitHere>{');
+
         if (s == str){
 	
             if (typeof(self.messageCallback) === "function")
