@@ -25,7 +25,8 @@ var Nbhb = exports.Nbhb = function() {
             if (self.config.hasOwnProperty(prop))
                 self.config[prop] = config[prop];
         }
-
+        self.messageCallback = receivedMessageCallback;
+        self.errorCallback = errorCallback;
         self.socket = new net.createConnection(self.config.port, self.config.server);
         self.socket.setNoDelay(true);
         self.socket._isConnected = false;
@@ -48,9 +49,11 @@ var Nbhb = exports.Nbhb = function() {
         });
 
 		self.socket.on('error', function(err){
-			console.log("err0r:::", err);
-			if (typeof(self.errorCallback) === "function")
-				self.errorCallback(err);
+			console.log("err0r:::", err); //self.errorCallback(err);
+			//self.unsubscribe();
+			if (typeof(self.errorCallback) === "function") {
+			    self.errorCallback(err);
+			}
 		});
 
     } //  end of self.subscribe()
