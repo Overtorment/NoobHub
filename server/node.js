@@ -20,7 +20,7 @@ var server = require('net').createServer()
     , cfg = {
         port: 1337,
         buffer_size: 1024*16, // buffer allocated per each socket client
-        verbose: true // set to true to capture lots of debug info
+        verbose: false // set to true to capture lots of debug info
     }
     , _log = function(){
         if (cfg.verbose) console.log.apply(console, arguments);
@@ -34,6 +34,7 @@ process.on('uncaughtException', function(err){
 server.on('connection', function(socket) {
     socket.setNoDelay(true);
     socket.setKeepAlive(true, 300*1000);
+    socket.isConnected = true;
     socket.connection_id = socket.remoteAddress + '-' + socket.remotePort; // unique, used to trim out from sockets hashmap when closing socket
     socket.buffer = new Buffer(cfg.buffer_size);
     socket.buffer.len = 0; // due to Buffer's nature we have to keep track of buffer contents ourself
@@ -74,7 +75,7 @@ server.on('connection', function(socket) {
                 socket.buffer.len = socket.buffer.write(str, 0);
                 var subscribers = Object.keys(sockets[socket.channel]);
                 for (var i=0, l=subscribers.length; i<l; i++) {
-                    sockets[socket.channel][ subscribers[i] ].write("__JSON__START__" + json + "__JSON__END__");
+                    sockets[socket.channel][ subscribers[i] ].isConnected && sockets[socket.channel][ subscribers[i] ].write("__JSON__START__" + json + "__JSON__END__");
                 } // writing this message to all sockets with the same channel
                 time_to_exit = false;
             } else {  time_to_exit = true; } // if no json data found in buffer - then it is time to exit this loop
@@ -88,6 +89,7 @@ server.on('connection', function(socket) {
 
 var _destroy_socket = function (socket) {
         if  (!socket.channel || !sockets[socket.channel] || !sockets[socket.channel][socket.connection_id])  return;
+        sockets[socket.channel][socket.connection_id].isConnected = false;
         sockets[socket.channel][socket.connection_id].destroy();
         sockets[socket.channel][socket.connection_id].buffer = null;
         delete sockets[socket.channel][socket.connection_id].buffer
