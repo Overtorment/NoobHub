@@ -18,15 +18,17 @@ How to use it
 ------------
 
 START SERVER
-
-        $ node node.js
+```bash
+        $ nodejs node.js
+```
 
 INITIALIZE
-
+```lua
         hub = noobhub.new({ server = "127.0.0.1"; port = 1337; }); 
+```
 
 SUBSCRIBE TO A CHANNEL AND RECEIVE CALLBACKS WHEN NEW JSON MESSAGES ARRIVE
-
+```lua
         hub:subscribe({
           channel = "hello-world";	
         	callback = function(message)
@@ -37,16 +39,16 @@ SUBSCRIBE TO A CHANNEL AND RECEIVE CALLBACKS WHEN NEW JSON MESSAGES ARRIVE
         
         	end;
         });
-
+```
 SAY SOMETHING TO EVERYBODY ON THE CHANNEL
-
+```lua
         hub:publish({
             message = {
                 action  =  "ping",
                 timestamp = system.getTimer()
             }
         });
-
+```
 
 Authors
 -------
@@ -54,6 +56,10 @@ Authors
 * Igor Korsakov
 * Sergii Tsegelnyk
 
+
+Licence
+-------
+[WTFPL](http://www.wtfpl.net/txt/copying/)
 
 Official discussion thread
 ---------------------------
