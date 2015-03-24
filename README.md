@@ -3,6 +3,8 @@ NoobHub
 
 OpenSource multiplayer and network messaging for CoronaSDK, Moai, Gideros & LÖVE
 
+Battle-tested and production ready. Handling thousands of CCU (concurrent users), serving hundreds of thousands multiplayer games daily, routing hundreds of messages per second.
+
 * Connections are routed through socket server with minimum latency, ideal for action games.
 * Simple interface. Publish/subscribe paradigm in action.
 * Server written on blazing fast Nodejs.
@@ -49,6 +51,22 @@ SAY SOMETHING TO EVERYBODY ON THE CHANNEL
             }
         });
 ```
+
+
+Clients
+------
+* CoronaSDK
+* Gideros
+* Moai
+* LÖVE
+* Node.js (buggy)
+* PHP (debug console only)
+
+Getting ready for production use
+------------
+If you expect more than 1000 concurrent connections, you should increase limits on your server (max open file descriptors,
+max TCP/IP connections) and optionally fine-tune your server's TCP/IP stack.
+To make sure server process stays alive you migh want to use tools such as forever.js or supervisord.
 
 Authors
 -------
