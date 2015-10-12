@@ -50,7 +50,7 @@ server.on('connection', function(socket) {
 
         socket.buffer.len +=  data_raw.copy(socket.buffer, socket.buffer.len); // keeping track of how much data we have in buffer
 
-        var start, end, str = socket.buffer.slice(0,socket.buffer.len).toString()
+        var start, end, str = socket.buffer.slice(0,socket.buffer.len).toString();
 
         if ( (start = str.indexOf("__SUBSCRIBE__")) !=  -1   &&   (end = str.indexOf("__ENDSUBSCRIBE__"))  !=  -1) {
             // if socket was on another channel delete the old reference
@@ -92,7 +92,7 @@ var _destroy_socket = function (socket) {
         sockets[socket.channel][socket.connection_id].isConnected = false;
         sockets[socket.channel][socket.connection_id].destroy();
         sockets[socket.channel][socket.connection_id].buffer = null;
-        delete sockets[socket.channel][socket.connection_id].buffer
+        delete sockets[socket.channel][socket.connection_id].buffer;
         delete sockets[socket.channel][socket.connection_id];
         _log(socket.connection_id + " has been disconnected from channel " + socket.channel);
 
@@ -100,7 +100,7 @@ var _destroy_socket = function (socket) {
             delete sockets[socket.channel];
             _log('empty channel wasted');
         }
-}
+};
 
 
 server.on('listening', function(){ console.log('NoobHub on ' + server.address().address +':'+ server.address().port); });

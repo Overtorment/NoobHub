@@ -12,7 +12,7 @@ require("noobhub")
 
 latencies = {}
 
-hub = noobhub.new({ server = "198.57.44.231"; port = 1337; });
+hub = noobhub.new({ server = "46.4.76.236"; port = 1337; });
 
 hub:subscribe({
 	channel = "ping-channel";
@@ -45,6 +45,8 @@ hub:subscribe({
 			end
 			
 			print("---------- "..count..') average =  '..(sum/count)  );
+			native.showAlert( "Corona", "---------- "..count..') average =  '..(sum/count), { "OK", "Learn More" })
+
 		end;----------------------------------------------------------------
 
 

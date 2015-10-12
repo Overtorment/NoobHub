@@ -1,6 +1,6 @@
 --------------------
 -- NoobHub
--- opensource multiplayer and network messaging for CoronaSDK, Moai & Gideros
+-- opensource multiplayer and network messaging for CoronaSDK, Moai & Gideros & LÖVE
 --
 -- Demo project
 -- Pings itself and measures network latency
@@ -82,7 +82,7 @@ ms_counter:start()
 require("noobhub")
 latencies = {}
 
-hub = noobhub.new({ server = "198.57.44.231"; port = 1337; });
+hub = noobhub.new({ server = "46.4.76.236"; port = 1337; });
 
 aReportMsg = ""
 hub:subscribe({
