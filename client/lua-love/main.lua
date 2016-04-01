@@ -9,7 +9,7 @@
 
 require("noobhub")
 latencies = {}
-hub = noobhub.new({ server = "198.57.44.231"; port = 1337; });
+hub = noobhub.new({ server = "46.4.76.236"; port = 1337; });
 txt = '';
 
 hub:subscribe({

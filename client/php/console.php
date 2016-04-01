@@ -1,7 +1,7 @@
 <?php
-$url = '198.57.44.231';
-$port = 1337;
-$channel = 'testing';
+$url = !empty($argv[1]) ? $argv[1] :  '46.4.76.236';
+$port = !empty($argv[2]) ? $argv[2] :  1337;
+$channel = !empty($argv[3]) ? $argv[3] :  'testing';
 $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 $ip = gethostbyname($url);
 @socket_connect($socket, $ip, $port) or die("Cant connect to $url:$port\n");

@@ -10,7 +10,7 @@ var net = require("net")
         channel: 'gsom'
     };
 
-exports.noobhub = new function() {
+var Nbhb = exports.Nbhb = function() {
 
     var self = this;
 
@@ -25,7 +25,8 @@ exports.noobhub = new function() {
             if (self.config.hasOwnProperty(prop))
                 self.config[prop] = config[prop];
         }
-
+        self.messageCallback = receivedMessageCallback;
+        self.errorCallback = errorCallback;
         self.socket = new net.createConnection(self.config.port, self.config.server);
         self.socket.setNoDelay(true);
         self.socket._isConnected = false;
@@ -49,8 +50,10 @@ exports.noobhub = new function() {
 
 		self.socket.on('error', function(err){
 			console.log("err0r:::", err);
-			if (typeof(self.errorCallback) === "function")
-				self.errorCallback(err);
+
+			if (typeof(self.errorCallback) === "function") {
+			    return self.errorCallback(err);
+			} else return;
 		});
 
     } //  end of self.subscribe()
@@ -74,7 +77,8 @@ exports.noobhub = new function() {
 
     self._handleIncomingMessage = function(data) {
         var str = String(data).replace(/__JSON__START__|__JSON__END__|\r|\n/g, '');
-	var s = String(str).replace(/}{|\r|\n/g, '}<splitHere>{');
+	    var s = String(str).replace(/}{|\r|\n/g, '}<splitHere>{');
+
         if (s == str){
 	
             if (typeof(self.messageCallback) === "function")
@@ -90,3 +94,5 @@ exports.noobhub = new function() {
     }
 
 };
+
+exports.noobhub = new Nbhb();
