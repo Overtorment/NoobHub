@@ -80,7 +80,7 @@ var Nbhb = exports.Nbhb = function() {
 	    var s = String(str).replace(/}{|\r|\n/g, '}<splitHere>{');
 
         if (s == str){
-	
+
             if (typeof(self.messageCallback) === "function")
                 self.messageCallback(str);
         }

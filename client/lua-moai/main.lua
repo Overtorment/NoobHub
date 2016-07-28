@@ -21,10 +21,10 @@ aMainLayer:setViewport ( aViewport )
 asciiTextCodes  = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 .,:;!?()&/-'
 appFonts        = {}
 appFonts["anonymous"] = {
-	ttf        = 'anonymous.ttf', 
-	textcodes  = asciiTextCodes, 
+	ttf        = 'anonymous.ttf',
+	textcodes  = asciiTextCodes,
 	font       = MOAIFont.new(),
-	size       = 10, 
+	size       = 10,
 	dpi        = 163
 }
 
@@ -90,7 +90,7 @@ hub:subscribe({
 	callback = function(message)
 		--aReportMsg = "message received  = "..json.encode(message)
 		if(message.action == "ping")   then ----------------------------------
-			
+
 			aReportMsg = "ping received, sending pong"
 			hub:publish({
 				message = {

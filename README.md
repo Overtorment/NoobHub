@@ -26,19 +26,19 @@ START SERVER
 
 INITIALIZE
 ```lua
-        hub = noobhub.new({ server = "127.0.0.1"; port = 1337; }); 
+        hub = noobhub.new({ server = "127.0.0.1"; port = 1337; });
 ```
 
 SUBSCRIBE TO A CHANNEL AND RECEIVE CALLBACKS WHEN NEW JSON MESSAGES ARRIVE
 ```lua
         hub:subscribe({
-          channel = "hello-world";	
+          channel = "hello-world";
         	callback = function(message)
-        
-        		if(message.action == "ping")   then 
+
+        		if(message.action == "ping")   then
         			print("Pong!")
         		end;
-        
+
         	end;
         });
 ```

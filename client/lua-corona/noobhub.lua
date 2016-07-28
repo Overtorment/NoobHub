@@ -87,7 +87,7 @@ noobhub = {
 
 					local got_something_new = false
 					while  true  do
-						skt, e, p = v:receive()
+						local skt, e, p = v:receive()
 						if (skt) then  self.buffer = self.buffer .. skt;  got_something_new=true;  end
 						if (p) then  self.buffer = self.buffer .. p;  got_something_new=true;  end
 						if (not skt) then break; end

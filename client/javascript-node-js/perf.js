@@ -53,18 +53,18 @@ var z = function(idx) {
                 server: 'localhost',
                 channel: channel
             }, function() { isAlive = 1; return _onSubscribed(idx); }
-            , function(msg) { 
+            , function(msg) {
                 if (msg === _myMessage) {
                     var lat = Date.now() - startTime;
                     console.log(idx + 'latency is : ',  lat);
                     _sendMetrics('latency:'+lat+'|ms');
                 }
-                return _onMessage(idx, msg); 
+                return _onMessage(idx, msg);
             }
-            , function(err) { 
-                isAlive = 0; 
-                clearInterval(_interval); 
-                clearInterval(_changeChannel); 
+            , function(err) {
+                isAlive = 0;
+                clearInterval(_interval);
+                clearInterval(_changeChannel);
                 return _onError(idx, err);
             }
             );
@@ -93,7 +93,7 @@ var z = function(idx) {
                clearInterval(_interval);
                clearInterval(_changeChannel);
                 n.unsubscribe();
-                n = null; 
+                n = null;
             }
         };
 

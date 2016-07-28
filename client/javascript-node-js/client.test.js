@@ -13,11 +13,9 @@ noobhub.subscribe(
     }
     , function(s){
         console.log('subscribed callback');
-			
 		noobhub.publish({ a : Math.random() }, function(){
 			console.log("data sent");
 		});
-		
     }
     , function(data) {
         console.log("get data callback: " + data);
