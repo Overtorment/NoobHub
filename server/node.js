@@ -104,4 +104,5 @@ var _destroy_socket = function (socket) {
 
 
 server.on('listening', function(){ console.log('NoobHub on ' + server.address().address +':'+ server.address().port); });
-server.listen(cfg.port);
+server.listen(cfg.port, '::');
+
