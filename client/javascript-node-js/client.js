@@ -3,96 +3,95 @@
  *
  */
 
-var net = require("net")
-    , configDef = {
-        server: 'localhost',
-        port: 1337,
-        channel: 'gsom'
-    };
+var net = require('net')
+var configDef = {
+  server: 'localhost',
+  port: 1337,
+  channel: 'gsom'
+}
 
-var Nbhb = exports.Nbhb = function() {
+var Nbhb = exports.Nbhb = function () {
+  var self = this
 
-    var self = this;
+  this.socket = null
+  this.buffer = new Buffer(1024 * 16)
+  this.buffer.len = 0
+  this.messageCallback = null
+  this.errorCallback = null
 
-	this.socket = null;
-    this.messageCallback = null
-	this.errorCallback = null;
+  this.config = configDef
 
-    this.config = configDef;
+  self.subscribe = function (config, subscribedCallback, receivedMessageCallback, errorCallback) {
+    for (var prop in config) {
+      if (self.config.hasOwnProperty(prop)) {
+        self.config[prop] = config[prop]
+      }
+    }
+    self.messageCallback = receivedMessageCallback
+    self.errorCallback = errorCallback
+    self.socket = net.createConnection(self.config.port, self.config.server)
+    self.socket.setNoDelay(true)
+    self.socket._isConnected = false
 
-    self.subscribe = function(config, subscribedCallback, receivedMessageCallback, errorCallback) {
-        for (var prop in config) {
-            if (self.config.hasOwnProperty(prop))
-                self.config[prop] = config[prop];
+    self.socket.on('connect', function () {
+      // console.log('connected to ', config.server + ':' + config.port)
+      self.socket.write('__SUBSCRIBE__' + config.channel + '__ENDSUBSCRIBE__', function () {
+        self.socket._isConnected = true
+
+        if (typeof (subscribedCallback) === 'function') {
+          subscribedCallback(self.socket)
         }
-        self.messageCallback = receivedMessageCallback;
-        self.errorCallback = errorCallback;
-        self.socket = new net.createConnection(self.config.port, self.config.server);
-        self.socket.setNoDelay(true);
-        self.socket._isConnected = false;
 
-        self.socket.on('connect', function(){
-            console.log('connected to ', config.server + ':' + config.port);
-            self.socket.write("__SUBSCRIBE__" + config.channel + "__ENDSUBSCRIBE__", function(){
-                self.socket._isConnected = true;
+        self.socket.on('data', self._handleIncomingMessage)
+      })
+    })
 
-                if (typeof(subscribedCallback) === "function") {
-                    subscribedCallback(self.socket);
-                }
+    self.socket.on('error', function (err) {
+      // console.log('err0r:::', err)
 
-                if (typeof(receivedMessageCallback) === "function") {
-                    self.messageCallback = receivedMessageCallback;
-                    self.socket.on('data', self._handleIncomingMessage);
-                }
-            });
+      if (typeof (self.errorCallback) === 'function') {
+        return self.errorCallback(err)
+      } else {
+        return
+      }
+    })
+  } //  end of self.subscribe()
 
-        });
-
-		self.socket.on('error', function(err){
-			console.log("err0r:::", err);
-
-			if (typeof(self.errorCallback) === "function") {
-			    return self.errorCallback(err);
-			} else return;
-		});
-
-    } //  end of self.subscribe()
-
-    self.publish = function(message, cb) {
-        if (!self.socket._isConnected)
-            return false;
-
-        if (typeof message !== "string")
-            message = JSON.stringify(message);
-
-        this.socket.write("__JSON__START__" +message+ "__JSON__END__", cb);
+  self.publish = function (message, cb) {
+    if (!self.socket._isConnected) {
+      return false
     }
 
-    self.unsubscribe = function() {
-        if (self.socket._isConnected) {
-			self.socket.end("Take care NoobHub...");
-			self.socket._isConnected = false;
-		}
+    if (typeof message !== 'string') {
+      message = JSON.stringify(message)
     }
 
-    self._handleIncomingMessage = function(data) {
-        var str = String(data).replace(/__JSON__START__|__JSON__END__|\r|\n/g, '');
-	    var s = String(str).replace(/}{|\r|\n/g, '}<splitHere>{');
+    this.socket.write('__JSON__START__' + message + '__JSON__END__', cb)
+  }
 
-        if (s == str){
-
-            if (typeof(self.messageCallback) === "function")
-                self.messageCallback(str);
-        }
-        else{
-	    str = s.split("<splitHere>");
-	    for (var i in str) {
-	      if (typeof(self.messageCallback) === "function")
-		self.messageCallback(str[i]);
-	    }
-	}
+  self.unsubscribe = function () {
+    if (self.socket._isConnected) {
+      self.socket.end('Take care NoobHub...')
+      self.socket._isConnected = false
     }
+  }
 
-};
+  self._handleIncomingMessage = function (data) {
+    self.buffer.len += data.copy(self.buffer, self.buffer.len)
+    var start
+    var end
+    var str = self.buffer.slice(0, self.buffer.len).toString()
 
-exports.noobhub = new Nbhb();
+    if ((start = str.indexOf('__JSON__START__')) !== -1 && (end = str.indexOf('__JSON__END__')) !== -1) {
+      var json = str.substr(start + 15, end - (start + 15))
+      str = str.substr(end + 13)  // cut the message and remove the precedant part of the buffer since it can't be processed
+      self.buffer.len = self.buffer.write(str, 0)
+      json = JSON.parse(json)
+      if (typeof (self.messageCallback) === 'function') {
+        self.messageCallback(json)
+      }
+    }
+  }
+}
+
+exports.noobhub = new Nbhb()
