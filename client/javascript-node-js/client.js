@@ -10,7 +10,7 @@ var configDef = {
   channel: 'gsom'
 }
 
-var Nbhb = exports.Nbhb = function () {
+var Noobhub = function (config) {
   var self = this
 
   this.socket = null
@@ -18,17 +18,25 @@ var Nbhb = exports.Nbhb = function () {
   this.buffer.len = 0
   this.messageCallback = null
   this.errorCallback = null
+  this.subscribedCallback = null
 
   this.config = configDef
 
-  self.subscribe = function (config, subscribedCallback, receivedMessageCallback, errorCallback) {
+  for (var prop in config) {
+    if (self.config.hasOwnProperty(prop)) {
+      self.config[prop] = config[prop]
+    }
+  }
+
+  self.subscribe = function (config) {
     for (var prop in config) {
       if (self.config.hasOwnProperty(prop)) {
         self.config[prop] = config[prop]
       }
     }
-    self.messageCallback = receivedMessageCallback
-    self.errorCallback = errorCallback
+    self.messageCallback = config.callback || self.messageCallback
+    self.errorCallback = config.errorCallback || self.errorCallback
+    self.subscribedCallback = config.subscribedCallback || self.subscribedCallback
     self.socket = net.createConnection(self.config.port, self.config.server)
     self.socket.setNoDelay(true)
     self.socket._isConnected = false
@@ -38,8 +46,8 @@ var Nbhb = exports.Nbhb = function () {
       self.socket.write('__SUBSCRIBE__' + config.channel + '__ENDSUBSCRIBE__', function () {
         self.socket._isConnected = true
 
-        if (typeof (subscribedCallback) === 'function') {
-          subscribedCallback(self.socket)
+        if (typeof (self.subscribedCallback) === 'function') {
+          self.subscribedCallback(self.socket)
         }
 
         self.socket.on('data', self._handleIncomingMessage)
@@ -94,4 +102,6 @@ var Nbhb = exports.Nbhb = function () {
   }
 }
 
-exports.noobhub = new Nbhb()
+exports.new = function () {
+  return new Noobhub()
+}
