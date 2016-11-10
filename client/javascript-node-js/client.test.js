@@ -10,6 +10,11 @@ var iteration = 1
 
 var hub = noobhub.new({server: 'localhost', port: 1337})
 
+setTimeout(function () {
+  console.log('tests NOT ok')
+  process.exit()
+}, 5000)
+
 hub.subscribe({
   channel: 'testChannel' + require('crypto').createHash('md5').update(Math.random().toString()).digest('hex'),
   callback: function (data) {
