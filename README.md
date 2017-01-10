@@ -1,16 +1,20 @@
 NoobHub
 =======
 
+[![JavaScript Style Guide](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com/)
+
 OpenSource multiplayer and network messaging for CoronaSDK, Moai, Gideros & LÖVE
 
-Battle-tested and production ready. Handling thousands of CCU (concurrent users), serving hundreds of thousands multiplayer games daily, routing hundreds of messages per second.
+Battle-tested and production ready. Handling thousands of CCU (concurrent users), serving hundreds of thousands multiplayer games daily, routing hundreds of messages per second, with months of uptime.
 
 * Connections are routed through socket server with minimum latency, ideal for action games.
 * Simple interface. Publish/subscribe paradigm in action.
 * Server written on blazing fast Nodejs.
+* Zero dependency. Works out of the box, no NPM ecosystem required.
 * Socket connections, works great through any NAT (local area network), messages delivery is reliable and fast.
+* Low CPU and memory footprint
 
-Repo includes server code (so you can use your own server) and CoronaSDK/Moai/Gideros client. More clients to come.
+Repo includes server code (so you can use your own server) and CoronaSDK/Moai/Gideros/LÖVE client. More clients to come.
 You can test on my server, credentials are hardcoded in demo project!
 
 Lua code may serve as an example of how LuaSocket library works.
@@ -26,19 +30,19 @@ START SERVER
 
 INITIALIZE
 ```lua
-        hub = noobhub.new({ server = "127.0.0.1"; port = 1337; }); 
+        hub = noobhub.new({ server = "127.0.0.1"; port = 1337; });
 ```
 
 SUBSCRIBE TO A CHANNEL AND RECEIVE CALLBACKS WHEN NEW JSON MESSAGES ARRIVE
 ```lua
         hub:subscribe({
-          channel = "hello-world";	
+          channel = "hello-world";
         	callback = function(message)
-        
-        		if(message.action == "ping")   then 
+
+        		if(message.action == "ping")   then
         			print("Pong!")
         		end;
-        
+
         	end;
         });
 ```
@@ -59,8 +63,21 @@ Clients
 * Gideros
 * Moai
 * LÖVE
-* Node.js (buggy)
+* Node.js
 * PHP (debug console only)
+
+Tests
+-----
+
+Simple acceptance test uses Nodejs client to test the server itself:
+
+```bash
+    $ ./run-tests.sh
+    starting Noobhub server...
+    NoobHub on :::1337
+    running tests...
+    tests ok
+```
 
 Getting ready for production use
 ------------

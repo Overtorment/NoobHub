@@ -16,11 +16,11 @@ $write  = NULL;
 $except = NULL;
 $read_buffer = '';
 while(1) {
-    $read = array($socket);    
+    $read = array($socket);
     $num_changed_sockets = socket_select($read, $write, $except, 0,0);
     if ( $num_changed_sockets > 0 ) {
         foreach($read as $sock)
-        if( $r = socket_read($sock,1,PHP_NORMAL_READ) ) {            
+        if( $r = socket_read($sock,1,PHP_NORMAL_READ) ) {
             $r = str_ireplace("\n",'',$r);
             $r = str_ireplace("\r",'',$r);
             $read_buffer .= $r;
