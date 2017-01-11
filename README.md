@@ -28,6 +28,12 @@ START SERVER
         $ nodejs node.js
 ```
 
+OR INSTALL NPM PACKAGE AND RUN FROM CLI
+```bash
+        $ npm i noobhub -g
+        $ noobhub-server --port=1337 --verbose=true --buffer_size=123456
+```
+
 INITIALIZE
 ```lua
         hub = noobhub.new({ server = "127.0.0.1"; port = 1337; });
