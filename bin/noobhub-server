@@ -1,0 +1,32 @@
+#!/usr/bin/env node
+
+const server = require('../server')
+
+const config = {
+    port: 1337,
+    buffer_size: 1024 * 16,
+    verbose: false
+}
+
+process.argv.slice(2).forEach(prop => {
+    let parts = prop.split('='),
+        pName = parts[0].substr(2),
+        pVal = parts[1];
+
+    switch (pName) {
+        case 'port':
+        case 'buffer_size': {
+            pVal = parseInt(pVal, 10)
+            break
+        }
+        case 'verbose': {
+            pVal = !!(pVal === 'true')
+            break
+        }
+        default: break
+    }
+
+    config[pName] = pVal
+})
+
+server.start(config)

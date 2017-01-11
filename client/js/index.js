@@ -7,14 +7,17 @@ var net = require('net')
 var configDef = {
   server: 'localhost',
   port: 1337,
-  channel: 'gsom'
+  channel: 'gsom',
+  buffer_size: 1024 * 16
 }
 
-var Noobhub = function (config) {
+var Noobhub = function (config={}) {
+  Object.assign(configDef, config)
+
   var self = this
 
   this.socket = null
-  this.buffer = new Buffer(1024 * 16)
+  this.buffer = Buffer.alloc(configDef.buffer_size)
   this.buffer.len = 0
   this.messageCallback = null
   this.errorCallback = null
@@ -102,6 +105,5 @@ var Noobhub = function (config) {
   }
 }
 
-exports.new = function () {
-  return new Noobhub()
-}
+exports.new = _cfg => new Noobhub(_cfg)
+

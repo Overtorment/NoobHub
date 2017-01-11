@@ -3,7 +3,7 @@
  *
  */
 
-var noobhub = require('./client.js')
+var noobhub = require('./index.js')
 var assert = require('assert')
 var randomData = {rand: Math.random()}
 var iteration = 1
