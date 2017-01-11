@@ -1,0 +1,30 @@
+{
+  "name": "noobhub",
+  "version": "1.1.0",
+  "description": "network multiplayer pub-sub messaging server on nodejs and clients on lua and js",
+  "main": "index.js",
+  "bin": {
+    "noobhub-server": "./bin/noobhub-server",
+    "noobhub-client": "./bin/noobhub-client"
+  },
+  "engines": {
+    "node": ">= 6.x.x",
+    "npm": "3.x.x"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Overtorment/NoobHub.git"
+  },
+  "keywords": [
+    "nodejs",
+    "coronasdk",
+    "moai",
+    "gideros"
+  ],
+  "author": "Igor Korsakov <overtorment@gmail.com>, Sergii Tsegelnyk <dr3am3r.ua@gmail.com>",
+  "license": "WTFPL",
+  "bugs": {
+    "url": "https://github.com/Overtorment/NoobHub/issues"
+  },
+  "homepage": "https://github.com/Overtorment/NoobHub#readme"
+}
