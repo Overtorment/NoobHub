@@ -3,7 +3,7 @@ NoobHub
 
 [![JavaScript Style Guide](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com/)
 
-OpenSource multiplayer and network messaging for CoronaSDK, Moai, Gideros & LÖVE
+OpenSource multiplayer and network messaging for CoronaSDK, Moai, Gideros, LÖVE & Defold
 
 Battle-tested and production ready. Handling thousands of CCU (concurrent users), serving hundreds of thousands multiplayer games daily, routing hundreds of messages per second, with months of uptime.
 
