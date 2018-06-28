@@ -36,7 +36,7 @@ server.on('connection', function (socket) {
   socket.setKeepAlive(true, 300 * 1000)
   socket.isConnected = true
   socket.connectionId = socket.remoteAddress + '-' + socket.remotePort // unique, used to trim out from sockets hashmap when closing socket
-  socket.buffer = new Buffer(cfg.buffer_size)
+  socket.buffer = new Buffer.alloc(cfg.buffer_size)
   socket.buffer.len = 0 // due to Buffer's nature we have to keep track of buffer contents ourself
 
   _log('New client: ' + socket.remoteAddress + ':' + socket.remotePort)
