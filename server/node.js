@@ -19,12 +19,35 @@ const net = require('net');
 
 const cfg = {
   port: 1337,
+  wsPort: 2337, // comment out if you don't need websocket bridge
   buffer_size: 1024 * 16, // buffer allocated per each socket client
-  verbose: true, // set to true to capture lots of debug info
+  // verbose: true, // set to true to capture lots of debug info
 };
 
-const server = net.createServer();
 const sockets = {}; // this is where we store all current client socket connections
+
+let sendAsWsMessage;
+
+if (cfg.wsPort) {
+  function sendAsTcpMessage(payload, channel) {
+    const channelSockets = sockets[channel];
+    if (!channelSockets) {
+      return;
+    }
+    const subscribers = Object.values(channelSockets);
+    for (let sub of subscribers) {
+      sub.isConnected && sub.write(payload);
+    }
+  }
+
+  sendAsWsMessage = require('./ws-server')({
+    port: cfg.wsPort,
+    verbose: cfg.verbose,
+    sendAsTcpMessage,
+  });
+}
+
+const server = net.createServer();
 
 function _log() {
   if (cfg.verbose) console.log.apply(console, arguments);
@@ -61,6 +84,7 @@ server.on('connection', (socket) => {
     let end;
     let str = socket.buffer.slice(0, socket.buffer.len).toString();
 
+    // PROCESS SUBSCRIPTION 1ST
     if (
       (start = str.indexOf('__SUBSCRIBE__')) !== -1 &&
       (end = str.indexOf('__ENDSUBSCRIBE__')) !== -1
@@ -75,7 +99,9 @@ server.on('connection', (socket) => {
       }
       socket.channel = str.substr(start + 13, end - (start + 13));
       socket.write('Hello. Noobhub online. \r\n');
-      _log('Client subscribes for channel: ' + socket.channel);
+      _log(
+        `TCP Client ${socket.connectionId} subscribes for channel: ${socket.channel}`
+      );
       str = str.substr(end + 16); // cut the message and remove the precedant part of the buffer since it can't be processed
       socket.buffer.len = socket.buffer.write(str, 0);
       sockets[socket.channel] = sockets[socket.channel] || {}; // hashmap of sockets  subscribed to the same channel
@@ -85,21 +111,27 @@ server.on('connection', (socket) => {
     let timeToExit = true;
     do {
       // this is for a case when several messages arrived in buffer
+      // PROCESS JSON NEXT
       if (
         (start = str.indexOf('__JSON__START__')) !== -1 &&
         (end = str.indexOf('__JSON__END__')) !== -1
       ) {
         const json = str.substr(start + 15, end - (start + 15));
-        _log('Client posts json:  ' + json);
+        _log(`TCP Client ${socket.connectionId} posts json: ${json}`);
         str = str.substr(end + 13); // cut the message and remove the precedant part of the buffer since it can't be processed
         socket.buffer.len = socket.buffer.write(str, 0);
-        var subscribers = Object.keys(sockets[socket.channel]);
-        for (var i = 0, l = subscribers.length; i < l; i++) {
-          sockets[socket.channel][subscribers[i]].isConnected &&
-            sockets[socket.channel][subscribers[i]].write(
-              '__JSON__START__' + json + '__JSON__END__'
-            );
-        } // writing this message to all sockets with the same channel
+
+        const payload = '__JSON__START__' + json + '__JSON__END__';
+
+        sendAsWsMessage && sendAsWsMessage(payload, socket.channel);
+
+        const channelSockets = sockets[socket.channel];
+        if (channelSockets) {
+          const subscribers = Object.values(channelSockets);
+          for (let sub of subscribers) {
+            sub.isConnected && sub !== socket && sub.write(payload);
+          }
+        }
         timeToExit = false;
       } else {
         timeToExit = true;
@@ -128,9 +160,7 @@ function _destroySocket(socket) {
   delete sockets[socket.channel][socket.connectionId].buffer;
   delete sockets[socket.channel][socket.connectionId];
   _log(
-    socket.connectionId +
-      ' has been disconnected from channel ' +
-      socket.channel
+    `${socket.connectionId} has been disconnected from channel ${socket.channel}`
   );
 
   if (Object.keys(sockets[socket.channel]).length === 0) {
@@ -141,7 +171,7 @@ function _destroySocket(socket) {
 
 server.on('listening', () => {
   console.log(
-    'NoobHub on ' + server.address().address + ':' + server.address().port
+    `NoobHub on ${server.address().address}:${server.address().port}`
   );
 });
 

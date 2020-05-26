@@ -2,16 +2,13 @@ const noobhub = require('./client');
 
 const hub = noobhub.new({});
 
-const myName = 'user_' + Math.floor(1000 * Math.random());
+const myName = 'js_node_user_' + Math.floor(1000 * Math.random());
 const ch = 'ch1'; // 'ch2'
 const dt = 1000;
 
 hub.subscribe({
   channel: ch,
   callback: (data) => {
-    if (data.from === myName) {
-      return;
-    }
     console.log('callback', data);
   },
   subscribedCallback: (socket) => {
