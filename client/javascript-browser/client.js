@@ -54,5 +54,5 @@ const noobhub = {
     });
 
     return { publish, subscribe };
-  },
+  }
 };

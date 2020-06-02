@@ -9,7 +9,7 @@ Battle-tested and production ready. Handling thousands of CCU (concurrent users)
 - Connections are routed through socket server with minimum latency, ideal for action games.
 - Simple interface. Publish/subscribe paradigm in action.
 - Server written on blazing fast Nodejs.
-- Zero dependency. Works out of the box, no NPM ecosystem required.
+- Zero dependency. Works out of the box, no NPM ecosystem required. (for websocket bridge relies on `ws` module, read below)
 - Socket connections, works great through any NAT (local area network), messages delivery is reliable and fast.
 - Low CPU and memory footprint
 
@@ -60,7 +60,7 @@ hub.subscribe({
   channel: 'hello-world',
   callback: (data) => {
     console.log('callback', data);
-  },
+  }
 });
 ```
 
@@ -78,7 +78,7 @@ SAY SOMETHING TO EVERYBODY ON THE CHANNEL
 ```js
 hub.publish({
   action: 'ping',
-  timestamp: Date.now(),
+  timestamp: Date.now()
 });
 ```
 

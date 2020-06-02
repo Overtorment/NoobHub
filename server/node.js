@@ -21,6 +21,7 @@ const cfg = {
   port: 1337,
   wsPort: 2337, // comment out if you don't need websocket bridge
   buffer_size: 1024 * 16, // buffer allocated per each socket client
+  sendOwnMessagesBack: true // if disabled, clients don't get their own messages back
   // verbose: true, // set to true to capture lots of debug info
 };
 
@@ -44,6 +45,7 @@ if (cfg.wsPort) {
     port: cfg.wsPort,
     verbose: cfg.verbose,
     sendAsTcpMessage,
+    sendOwnMessagesBack: cfg.sendOwnMessagesBack
   });
 }
 
@@ -63,7 +65,7 @@ server.on('connection', (socket) => {
   socket.setKeepAlive(true, 300 * 1000);
   socket.isConnected = true;
   socket.connectionId = socket.remoteAddress + '-' + socket.remotePort; // unique, used to trim out from sockets hashmap when closing socket
-  socket.buffer = new Buffer.alloc(cfg.buffer_size);
+  socket.buffer = Buffer.alloc(cfg.buffer_size);
   socket.buffer.len = 0; // due to Buffer's nature we have to keep track of buffer contents ourself
 
   _log('New client: ' + socket.remoteAddress + ':' + socket.remotePort);
@@ -129,7 +131,10 @@ server.on('connection', (socket) => {
         if (channelSockets) {
           const subscribers = Object.values(channelSockets);
           for (let sub of subscribers) {
-            sub.isConnected && sub !== socket && sub.write(payload);
+            if (!cfg.sendOwnMessagesBack && sub === socket) {
+              continue;
+            }
+            sub.isConnected && sub.write(payload);
           }
         }
         timeToExit = false;

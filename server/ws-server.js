@@ -1,6 +1,11 @@
 const WebSocket = require('ws'); // npm install ws
 
-function wsServerHook({ port, verbose, sendAsTcpMessage }) {
+function wsServerHook({
+  port,
+  verbose,
+  sendAsTcpMessage,
+  sendOwnMessagesBack
+}) {
   const wss = new WebSocket.Server({ port });
   console.log(`... and on :${port} for ws`);
 
@@ -57,7 +62,10 @@ function wsServerHook({ port, verbose, sendAsTcpMessage }) {
         }
         const subscribers = Object.values(channelSockets);
         for (let sub of subscribers) {
-          sub.isConnected && sub !== ws && sub.send(payload);
+          if (!sendOwnMessagesBack && sub === ws) {
+            continue;
+          }
+          sub.isConnected && sub.send(payload);
         }
       }
     });

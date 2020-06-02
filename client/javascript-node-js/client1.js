@@ -22,5 +22,5 @@ hub.subscribe({
   errorCallback: (err) => {
     console.log('error callback', err);
     process.exit(1);
-  },
+  }
 });

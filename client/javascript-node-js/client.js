@@ -14,7 +14,7 @@ function _log() {
 const configDef = {
   server: 'localhost',
   port: 1337,
-  channel: 'gsom',
+  channel: 'gsom'
 };
 
 const Noobhub = function (config) {
