@@ -1,0 +1,37 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>test noobhub websocket client</title>
+  </head>
+  <body>
+    <h1>test noobhub websocket client</h1>
+    <script src="client.js"></script>
+
+    <script>
+      const hub = noobhub.new({ server: 'localhost', port: 2337 });
+
+      const myName = 'js_browser_user_' + Math.floor(1000 * Math.random());
+      const ch = 'ch1';
+      const dt = 2000;
+
+      hub.subscribe({
+        channel: ch,
+        callback: (data) => {
+          console.log('callback', data);
+        },
+        subscribedCallback: () => {
+          console.log('subscribedCallback');
+
+          let i = 0;
+          setInterval(() => {
+            hub.publish({ from: myName, data: `${i++} ${Math.random()}` });
+          }, dt);
+        },
+        errorCallback: (err) => {
+          console.log('error callback', err);
+          process.exit(1);
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -3,38 +3,41 @@
  *
  */
 
-var noobhub = require('./client.js')
-var assert = require('assert')
-var randomData = {rand: Math.random()}
-var iteration = 1
+const assert = require('assert');
+const crypto = require('crypto');
 
-var hub = noobhub.new({server: 'localhost', port: 1337})
+const noobhub = require('./client.js');
 
-setTimeout(function () {
-  console.log('tests NOT ok (timeout)')
-  process.exit(1)
-}, 5000)
+const hub = noobhub.new({ server: 'localhost', port: 1337 });
+
+let randomData = { rand: Math.random() };
+let iteration = 1;
+
+setTimeout(() => {
+  console.log('tests NOT ok (timeout)');
+  process.exit(1);
+}, 5000);
 
 hub.subscribe({
-  channel: 'testChannel' + require('crypto').createHash('md5').update(Math.random().toString()).digest('hex'),
-  callback: function (data) {
-    assert.deepEqual(data, randomData)
+  channel:
+    'testChannel' +
+    crypto.createHash('md5').update(Math.random().toString()).digest('hex'),
+  callback: (data) => {
+    assert.deepEqual(data, randomData);
 
     if (iteration++ < 50) {
-      randomData = {rand: Math.random()}
-      hub.publish(randomData)
+      randomData = { rand: Math.random() };
+      hub.publish(randomData);
     } else {
-      console.log('tests ok')
-      process.exit()
+      console.log('tests ok');
+      process.exit();
     }
   },
-  subscribedCallback: function (socket) {
-    hub.publish(randomData, function () {
-    })
+  subscribedCallback: (socket) => {
+    hub.publish(randomData, () => {});
   },
-  errorCallback: function (err) {
-    console.log('error callback', err)
-    process.exit(1)
+  errorCallback: (err) => {
+    console.log('error callback', err);
+    process.exit(1);
   }
-})
-
+});
