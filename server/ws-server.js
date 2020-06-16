@@ -114,8 +114,17 @@ function wsServerHook({
     }
   }
 
+  function listNumClientsPerChannel() {
+    const resp = {};
+    for (let [channelName, channelValue] of Object.entries(sockets)) {
+      resp[channelName] = Object.keys(channelValue).length;
+    }
+    return resp;
+  }
+
   return {
-    sendAsWsMessage
+    sendAsWsMessage,
+    listNumClientsPerChannel
   };
 }
 
