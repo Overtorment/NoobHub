@@ -15,17 +15,31 @@
  *
  **/
 
+const _SUBS0_ = '__SUBSCRIBE__';
+const _SUBS1_ = '__ENDSUBSCRIBE__';
+const _JSON0_ = '__JSON__START__';
+const _JSON1_ = '__JSON__END__';
+
+const _SUBS0L_ = _SUBS0_.length;
+const _SUBS1L_ = _SUBS1_.length;
+const _JSON0L_ = _JSON0_.length;
+const _JSON1L_ = _JSON1_.length;
+
 const net = require('net');
 
 const cfg = {
-  port: 1337,
-  wsPort: 2337, // comment out if you don't need websocket bridge
+  verbose: true, // set to true to capture lots of debug info
   buffer_size: 1024 * 16, // buffer allocated per each socket client
-  sendOwnMessagesBack: true // if disabled, clients don't get their own messages back
-  // verbose: true, // set to true to capture lots of debug info
+  port: 1337,
+  // wsPort: 2337, // uncomment if you want the websocket bridge
+  sendOwnMessagesBack: true // if false, avoids sending own messages back to the sender
 };
 
 const sockets = {}; // this is where we store all current client socket connections
+
+function _log() {
+  if (cfg.verbose) console.log.apply(console, arguments);
+}
 
 let sendAsWsMessage;
 
@@ -41,19 +55,16 @@ if (cfg.wsPort) {
     }
   }
 
-  sendAsWsMessage = require('./ws-server')({
+  const wsOut = require('./ws-server')({
     port: cfg.wsPort,
     verbose: cfg.verbose,
     sendAsTcpMessage,
     sendOwnMessagesBack: cfg.sendOwnMessagesBack
   });
+  sendAsWsMessage = wsOut.sendAsWsMessage;
 }
 
 const server = net.createServer();
-
-function _log() {
-  if (cfg.verbose) console.log.apply(console, arguments);
-}
 
 // black magic
 process.on('uncaughtException', (err) => {
@@ -88,8 +99,8 @@ server.on('connection', (socket) => {
 
     // PROCESS SUBSCRIPTION 1ST
     if (
-      (start = str.indexOf('__SUBSCRIBE__')) !== -1 &&
-      (end = str.indexOf('__ENDSUBSCRIBE__')) !== -1
+      (start = str.indexOf(_SUBS0_)) !== -1 &&
+      (end = str.indexOf(_SUBS1_)) !== -1
     ) {
       // if socket was on another channel delete the old reference
       if (
@@ -99,31 +110,32 @@ server.on('connection', (socket) => {
       ) {
         delete sockets[socket.channel][socket.connectionId];
       }
-      socket.channel = str.substr(start + 13, end - (start + 13));
+      socket.channel = str.substr(start + _SUBS0L_, end - (start + _SUBS0L_));
       socket.write('Hello. Noobhub online. \r\n');
       _log(
         `TCP Client ${socket.connectionId} subscribes for channel: ${socket.channel}`
       );
-      str = str.substr(end + 16); // cut the message and remove the precedant part of the buffer since it can't be processed
+      str = str.substr(end + _SUBS1L_); // cut the message and remove the precedant part of the buffer since it can't be processed
       socket.buffer.len = socket.buffer.write(str, 0);
       sockets[socket.channel] = sockets[socket.channel] || {}; // hashmap of sockets  subscribed to the same channel
       sockets[socket.channel][socket.connectionId] = socket;
     }
 
-    let timeToExit = true;
+    let timeToExit = false;
     do {
       // this is for a case when several messages arrived in buffer
       // PROCESS JSON NEXT
       if (
-        (start = str.indexOf('__JSON__START__')) !== -1 &&
-        (end = str.indexOf('__JSON__END__')) !== -1
+        (start = str.indexOf(_JSON0_)) !== -1 &&
+        (end = str.indexOf(_JSON1_)) !== -1
       ) {
-        const json = str.substr(start + 15, end - (start + 15));
-        _log(`TCP Client ${socket.connectionId} posts json: ${json}`);
-        str = str.substr(end + 13); // cut the message and remove the precedant part of the buffer since it can't be processed
+        const jsonS = str.substr(start + _JSON0L_, end - (start + _JSON0L_));
+        _log(`TCP Client ${socket.connectionId} posts json: ${jsonS}`);
+        str = str.substr(end + _JSON1L_); // cut the message and remove the precedant part of the buffer since it can't be processed
         socket.buffer.len = socket.buffer.write(str, 0);
 
-        const payload = '__JSON__START__' + json + '__JSON__END__';
+        // broadcast to others in the channel
+        const payload = _JSON0_ + jsonS + _JSON1_;
 
         sendAsWsMessage && sendAsWsMessage(payload, socket.channel);
 
@@ -137,12 +149,11 @@ server.on('connection', (socket) => {
             sub.isConnected && sub.write(payload);
           }
         }
-        timeToExit = false;
       } else {
         timeToExit = true;
       } // if no json data found in buffer - then it is time to exit this loop
     } while (!timeToExit);
-  }); // end of  socket.on 'data'
+  }); // end of socket.on 'data'
 
   socket.on('error', () => {
     return _destroySocket(socket);
@@ -150,7 +161,7 @@ server.on('connection', (socket) => {
   socket.on('close', () => {
     return _destroySocket(socket);
   });
-}); //  end of server.on 'connection'
+}); // end of server.on 'connection'
 
 function _destroySocket(socket) {
   if (
