@@ -1,4 +1,13 @@
-const WebSocket = require('ws'); // npm install ws
+const _SUBS0_ = '__SUBSCRIBE__';
+const _SUBS1_ = '__ENDSUBSCRIBE__';
+const _JSON0_ = '__JSON__START__';
+const _JSON1_ = '__JSON__END__';
+
+const _SUBS0L_ = _SUBS0_.length;
+const _SUBS1L_ = _SUBS1_.length;
+const _JSON0L_ = _JSON0_.length;
+
+const WebSocket = require('ws');
 
 function wsServerHook({
   port,
@@ -15,7 +24,7 @@ function wsServerHook({
 
   const sockets = {}; // channel [connectionId]
 
-  wss.on('connection', (ws, req) => {
+  wss.on('connection', (ws) => {
     const remoteAddress = ws._socket.remoteAddress;
     const remotePort = ws._socket.remotePort;
     _log(`New client: ${remoteAddress}:${remotePort}`);
@@ -29,30 +38,30 @@ function wsServerHook({
 
       // PROCESS SUBSCRIPTION 1ST
       if (
-        (start = str.indexOf('__SUBSCRIBE__')) !== -1 &&
-        (end = str.indexOf('__ENDSUBSCRIBE__')) !== -1
+        (start = str.indexOf(_SUBS0_)) !== -1 &&
+        (end = str.indexOf(_SUBS1_)) !== -1
       ) {
-        ws.channel = str.substr(start + 13, end - (start + 13));
+        ws.channel = str.substr(start + _SUBS0L_, end - (start + _SUBS0L_));
 
         ws.send('Hello. Noobhub online. \r\n');
         _log(
           `WS Client ${ws.connectionId} subscribes for channel: ${ws.channel}`
         );
 
-        str = str.substr(end + 16);
+        str = str.substr(end + _SUBS1L_);
 
         sockets[ws.channel] = sockets[ws.channel] || {}; // hashmap of sockets  subscribed to the same channel
         sockets[ws.channel][ws.connectionId] = ws;
       }
 
       if (
-        (start = str.indexOf('__JSON__START__')) !== -1 &&
-        (end = str.indexOf('__JSON__END__')) !== -1
+        (start = str.indexOf(_JSON0_)) !== -1 &&
+        (end = str.indexOf(_JSON1_)) !== -1
       ) {
-        const json = str.substr(start + 15, end - (start + 15));
+        const json = str.substr(start + _JSON0L_, end - (start + _JSON0L_));
         _log(`WS Client ${ws.connectionId} posts json: ${json}`);
 
-        const payload = '__JSON__START__' + json + '__JSON__END__';
+        const payload = _JSON0_ + json + _JSON1_;
 
         sendAsTcpMessage(payload, ws.channel);
 
@@ -105,7 +114,18 @@ function wsServerHook({
     }
   }
 
-  return sendAsWsMessage;
+  function listNumClientsPerChannel() {
+    const resp = {};
+    for (let [channelName, channelValue] of Object.entries(sockets)) {
+      resp[channelName] = Object.keys(channelValue).length;
+    }
+    return resp;
+  }
+
+  return {
+    sendAsWsMessage,
+    listNumClientsPerChannel
+  };
 }
 
 module.exports = wsServerHook;
