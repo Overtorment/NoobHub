@@ -32,6 +32,7 @@ const cfg = {
   buffer_size: 1024 * 16, // buffer allocated per each socket client
   port: 1337,
   // wsPort: 2337, // uncomment if you want the websocket bridge
+  // httpPort: 3337, // uncomment if you want http endpoint to list channel counts
   sendOwnMessagesBack: true // if false, avoids sending own messages back to the sender
 };
 
@@ -41,7 +42,29 @@ function _log() {
   if (cfg.verbose) console.log.apply(console, arguments);
 }
 
+function listNumClientsPerChannel() {
+  const resp = {};
+  for (let [channelName, channelValue] of Object.entries(sockets)) {
+    resp[channelName] = Object.keys(channelValue).length;
+  }
+  return resp;
+}
+
 let sendAsWsMessage;
+let listNumClientsPerChannelWs;
+
+function listCompoundNumClientsPerChannel() {
+  const tcp = listNumClientsPerChannel();
+  const ws = listNumClientsPerChannelWs();
+  const allChannels = Array.from(
+    new Set(Object.keys(tcp).concat(Object.keys(ws)))
+  );
+  const compound = {};
+  for (let k of allChannels) {
+    compound[k] = (tcp[k] || 0) + (ws[k] || 0);
+  }
+  return compound;
+}
 
 if (cfg.wsPort) {
   function sendAsTcpMessage(payload, channel) {
@@ -62,6 +85,16 @@ if (cfg.wsPort) {
     sendOwnMessagesBack: cfg.sendOwnMessagesBack
   });
   sendAsWsMessage = wsOut.sendAsWsMessage;
+  listNumClientsPerChannelWs = wsOut.listNumClientsPerChannel;
+}
+
+if (cfg.httpPort) {
+  require('./http-channels-server')({
+    port: cfg.httpPort,
+    listNumClientsPerChannel: cfg.wsPort
+      ? listCompoundNumClientsPerChannel
+      : listNumClientsPerChannel
+  });
 }
 
 const server = net.createServer();
